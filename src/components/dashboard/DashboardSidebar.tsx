@@ -1,15 +1,13 @@
-import { Home, BarChart2, Users, Mail, Settings, Menu } from "lucide-react";
+import { Home, BarChart2, Users, Mail, Settings, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 const menuItems = [
@@ -17,6 +15,7 @@ const menuItems = [
   { icon: BarChart2, label: "Analytics" },
   { icon: Users, label: "Audience" },
   { icon: Mail, label: "Campaigns" },
+  { icon: ListChecks, label: "Tasks" },
   { icon: Settings, label: "Settings" },
 ];
 

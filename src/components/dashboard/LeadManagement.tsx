@@ -51,6 +51,16 @@ export const LeadManagement = () => {
     });
   };
 
+  const handleStatusChange = (leadId: string, newStatus: string) => {
+    setLeads(leads.map(lead => 
+      lead.id === leadId ? { ...lead, status: newStatus } : lead
+    ));
+    toast({
+      title: "Status Updated",
+      description: "Lead status has been successfully updated.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -133,7 +143,7 @@ export const LeadManagement = () => {
               leads.map((lead) => (
                 <Card key={lead.id}>
                   <CardContent className="p-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div>
                         <p className="font-medium">{lead.name}</p>
                         <p className="text-sm text-muted-foreground">
@@ -146,7 +156,20 @@ export const LeadManagement = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Status</p>
-                        <p className="capitalize">{lead.status}</p>
+                        <Select
+                          value={lead.status}
+                          onValueChange={(value) => handleStatusChange(lead.id, value)}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">New</SelectItem>
+                            <SelectItem value="closed">Closed</SelectItem>
+                            <SelectItem value="not-interested">Not Interested</SelectItem>
+                            <SelectItem value="price-offer">Got a Price Offer</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Source</p>

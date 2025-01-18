@@ -1,6 +1,7 @@
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
+import { LeadManagement } from "@/components/dashboard/LeadManagement";
 import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -77,21 +78,7 @@ const AgencyDashboard = () => {
               </TabsContent>
 
               <TabsContent value="leads">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lead Management</CardTitle>
-                    <CardDescription>Track and manage incoming leads</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center p-8">
-                      <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
-                      <p className="text-muted-foreground mb-4">
-                        CRM features are currently in development
-                      </p>
-                      <Button variant="outline">Add New Lead</Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <LeadManagement />
               </TabsContent>
             </Tabs>
           </div>

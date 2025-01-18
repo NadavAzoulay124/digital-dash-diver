@@ -1,10 +1,10 @@
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { CampaignChart } from "@/components/dashboard/CampaignChart";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { TaskBoard } from "@/components/dashboard/TaskBoard";
-import { Target, TrendingUp, Mail, Share2 } from "lucide-react";
+import { ClientTaskRequest } from "@/components/dashboard/ClientTaskRequest";
+import { ClientLeadStats } from "@/components/dashboard/ClientLeadStats";
+import { DollarSign, TrendingUp, Users, Target } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 
 const ClientDashboard = () => {
   return (
@@ -13,36 +13,36 @@ const ClientDashboard = () => {
         <DashboardSidebar role="client" />
         <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold mb-8">Project Overview</h1>
+            <h1 className="text-2xl font-bold mb-8">Client Overview</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <MetricCard
-                title="Campaign ROI"
-                value="324%"
-                change="+12.5%"
+                title="Total Spent"
+                value="$12,450"
+                change="+8.1%"
                 isPositive={true}
-                icon={Target}
+                icon={DollarSign}
               />
               <MetricCard
-                title="Engagement Rate"
-                value="8.2%"
-                change="+2.1%"
+                title="ROAS"
+                value="3.2x"
+                change="+0.4x"
                 isPositive={true}
                 icon={TrendingUp}
               />
               <MetricCard
-                title="Email Performance"
-                value="42%"
-                change="+5.4%"
+                title="Total Leads"
+                value="145"
+                change="+12"
                 isPositive={true}
-                icon={Mail}
+                icon={Users}
               />
               <MetricCard
-                title="Social Reach"
-                value="45.2K"
-                change="+8.1%"
+                title="Conversion Rate"
+                value="2.8%"
+                change="+0.3%"
                 isPositive={true}
-                icon={Share2}
+                icon={Target}
               />
             </div>
 
@@ -51,11 +51,11 @@ const ClientDashboard = () => {
                 <CampaignChart />
               </div>
               <div>
-                <RecentActivity />
+                <ClientLeadStats />
               </div>
             </div>
 
-            <TaskBoard />
+            <ClientTaskRequest />
           </div>
         </main>
       </div>

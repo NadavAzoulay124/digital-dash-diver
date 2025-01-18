@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import { MetricCard } from "@/components/dashboard/MetricCard";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
-import { Clock, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
+import { ClientContactLog } from "@/components/dashboard/ClientContactLog";
+import { AIAssistant } from "@/components/dashboard/AIAssistant";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const EmployeeDashboard = () => {
   return (
@@ -11,40 +13,27 @@ const EmployeeDashboard = () => {
         <DashboardSidebar role="employee" />
         <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold mb-8">My Workspace</h1>
+            <h1 className="text-2xl font-bold mb-8">Employee Dashboard</h1>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <MetricCard
-                title="Hours Logged"
-                value="164h"
-                change="+8h"
-                isPositive={true}
-                icon={Clock}
-              />
-              <MetricCard
-                title="Tasks Completed"
-                value="24"
-                change="+6"
-                isPositive={true}
-                icon={CheckCircle2}
-              />
-              <MetricCard
-                title="Pending Reviews"
-                value="5"
-                change="-2"
-                isPositive={true}
-                icon={AlertCircle}
-              />
-              <MetricCard
-                title="Upcoming Deadlines"
-                value="8"
-                change="+1"
-                isPositive={false}
-                icon={Calendar}
-              />
-            </div>
+            <Tabs defaultValue="tasks" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="contacts">Client Contacts</TabsTrigger>
+                <TabsTrigger value="assistant">AI Assistant</TabsTrigger>
+              </TabsList>
 
-            <TaskBoard />
+              <TabsContent value="tasks">
+                <TaskBoard />
+              </TabsContent>
+
+              <TabsContent value="contacts">
+                <ClientContactLog />
+              </TabsContent>
+
+              <TabsContent value="assistant">
+                <AIAssistant />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>

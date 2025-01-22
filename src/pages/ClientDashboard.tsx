@@ -2,6 +2,7 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { CampaignChart } from "@/components/dashboard/CampaignChart";
 import { ClientTaskRequest } from "@/components/dashboard/ClientTaskRequest";
 import { ClientLeadStats } from "@/components/dashboard/ClientLeadStats";
+import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { DollarSign, TrendingUp, Users, Target } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -53,6 +54,10 @@ const ClientDashboard = () => {
               <div>
                 <ClientLeadStats />
               </div>
+            </div>
+
+            <div className="mb-8">
+              <LeadsBoard />
             </div>
 
             <ClientTaskRequest />

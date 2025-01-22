@@ -3,6 +3,7 @@ import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ClientContactLog } from "@/components/dashboard/ClientContactLog";
 import { AIAssistant } from "@/components/dashboard/AIAssistant";
 import { ConversationSummary } from "@/components/dashboard/ConversationSummary";
+import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -18,6 +19,7 @@ const EmployeeDashboard = () => {
             <Tabs defaultValue="tasks" className="space-y-6">
               <TabsList>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="leads">Campaign Leads</TabsTrigger>
                 <TabsTrigger value="contacts">Client Contacts</TabsTrigger>
                 <TabsTrigger value="conversations">Conversation Summary</TabsTrigger>
                 <TabsTrigger value="assistant">AI Assistant</TabsTrigger>
@@ -25,6 +27,10 @@ const EmployeeDashboard = () => {
 
               <TabsContent value="tasks">
                 <TaskBoard />
+              </TabsContent>
+
+              <TabsContent value="leads">
+                <LeadsBoard />
               </TabsContent>
 
               <TabsContent value="contacts">

@@ -30,9 +30,9 @@ const App = () => (
         </nav>
         <Routes>
           <Route path="/" element={<AgencyDashboard />} />
-          <Route path="/agency" element={<AgencyDashboard />} />
-          <Route path="/client" element={<ClientDashboard />} />
-          <Route path="/employee" element={<EmployeeDashboard />} />
+          <Route path="/agency/*" element={<AgencyDashboard />} />
+          <Route path="/client/*" element={<ClientDashboard />} />
+          <Route path="/employee/*" element={<EmployeeDashboard />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

@@ -14,24 +14,24 @@ import {
 const menuItems = {
   agency: [
     { icon: Home, label: "Overview", path: "/agency" },
-    { icon: Users, label: "Clients", path: "/clients" },
-    { icon: Briefcase, label: "Projects", path: "/projects" },
-    { icon: BarChart2, label: "Analytics", path: "/analytics" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { icon: Users, label: "Clients", path: "/agency/clients" },
+    { icon: Briefcase, label: "Projects", path: "/agency/projects" },
+    { icon: BarChart2, label: "Analytics", path: "/agency/analytics" },
+    { icon: Settings, label: "Settings", path: "/agency/settings" },
   ],
   client: [
     { icon: Home, label: "Overview", path: "/client" },
-    { icon: Target, label: "Campaigns", path: "/campaigns" },
-    { icon: BarChart2, label: "Performance", path: "/performance" },
-    { icon: FileText, label: "Reports", path: "/reports" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { icon: Target, label: "Campaigns", path: "/client/campaigns" },
+    { icon: BarChart2, label: "Performance", path: "/client/performance" },
+    { icon: FileText, label: "Reports", path: "/client/reports" },
+    { icon: Settings, label: "Settings", path: "/client/settings" },
   ],
   employee: [
     { icon: Home, label: "Overview", path: "/employee" },
-    { icon: ListChecks, label: "Tasks", path: "/tasks" },
-    { icon: Calendar, label: "Schedule", path: "/schedule" },
-    { icon: Mail, label: "Messages", path: "/messages" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { icon: ListChecks, label: "Tasks", path: "/employee/tasks" },
+    { icon: Calendar, label: "Schedule", path: "/employee/schedule" },
+    { icon: Mail, label: "Messages", path: "/employee/messages" },
+    { icon: Settings, label: "Settings", path: "/employee/settings" },
   ],
 };
 

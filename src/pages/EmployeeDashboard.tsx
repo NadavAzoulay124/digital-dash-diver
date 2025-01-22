@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ClientContactLog } from "@/components/dashboard/ClientContactLog";
 import { AIAssistant } from "@/components/dashboard/AIAssistant";
+import { ConversationSummary } from "@/components/dashboard/ConversationSummary";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -19,6 +19,7 @@ const EmployeeDashboard = () => {
               <TabsList>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
                 <TabsTrigger value="contacts">Client Contacts</TabsTrigger>
+                <TabsTrigger value="conversations">Conversation Summary</TabsTrigger>
                 <TabsTrigger value="assistant">AI Assistant</TabsTrigger>
               </TabsList>
 
@@ -28,6 +29,10 @@ const EmployeeDashboard = () => {
 
               <TabsContent value="contacts">
                 <ClientContactLog />
+              </TabsContent>
+
+              <TabsContent value="conversations">
+                <ConversationSummary />
               </TabsContent>
 
               <TabsContent value="assistant">

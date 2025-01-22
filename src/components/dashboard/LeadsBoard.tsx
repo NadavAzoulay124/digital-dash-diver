@@ -41,7 +41,6 @@ const mockLeads: Lead[] = [
     ad: "New Arrivals Video",
     status: "Appointment Scheduled",
   },
-  // Add more mock data as needed
 ];
 
 const getStatusBadge = (status: Lead["status"]) => {

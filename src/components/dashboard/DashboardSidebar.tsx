@@ -1,5 +1,6 @@
 import { Home, BarChart2, Users, Mail, Settings, ListChecks, Calendar, FileText, Target, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -12,21 +13,21 @@ import {
 
 const menuItems = {
   agency: [
-    { icon: Home, label: "Overview", path: "/agency", active: true },
+    { icon: Home, label: "Overview", path: "/agency" },
     { icon: Users, label: "Clients", path: "/clients" },
     { icon: Briefcase, label: "Projects", path: "/projects" },
     { icon: BarChart2, label: "Analytics", path: "/analytics" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ],
   client: [
-    { icon: Home, label: "Overview", path: "/client", active: true },
+    { icon: Home, label: "Overview", path: "/client" },
     { icon: Target, label: "Campaigns", path: "/campaigns" },
     { icon: BarChart2, label: "Performance", path: "/performance" },
     { icon: FileText, label: "Reports", path: "/reports" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ],
   employee: [
-    { icon: Home, label: "Overview", path: "/employee", active: true },
+    { icon: Home, label: "Overview", path: "/employee" },
     { icon: ListChecks, label: "Tasks", path: "/tasks" },
     { icon: Calendar, label: "Schedule", path: "/schedule" },
     { icon: Mail, label: "Messages", path: "/messages" },
@@ -40,6 +41,8 @@ interface DashboardSidebarProps {
 
 export const DashboardSidebar = ({ role }: DashboardSidebarProps) => {
   const items = menuItems[role];
+  const navigate = useNavigate();
+  const location = useLocation();
   const titles = {
     agency: "Agency Hub",
     client: "Client Portal",
@@ -57,9 +60,12 @@ export const DashboardSidebar = ({ role }: DashboardSidebarProps) => {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton className={cn(
-                    item.active && "bg-primary/10 text-primary"
-                  )}>
+                  <SidebarMenuButton 
+                    onClick={() => navigate(item.path)}
+                    className={cn(
+                      location.pathname === item.path && "bg-primary/10 text-primary"
+                    )}
+                  >
                     <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
                   </SidebarMenuButton>

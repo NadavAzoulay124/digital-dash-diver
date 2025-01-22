@@ -89,11 +89,11 @@ export const LeadsBoard = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Phone</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Campaign</TableHead>
                 <TableHead>Ad Set</TableHead>
                 <TableHead>Ad</TableHead>
-                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -107,6 +107,22 @@ export const LeadsBoard = () => {
                   <TableCell className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
                     {lead.phone}
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={lead.status}
+                      onValueChange={(value: Lead["status"]) => handleStatusChange(lead.id, value)}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue>{getStatusBadge(lead.status)}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="New">New</SelectItem>
+                        <SelectItem value="Appointment Scheduled">Appointment Scheduled</SelectItem>
+                        <SelectItem value="Closed">Closed</SelectItem>
+                        <SelectItem value="Not Interested">Not Interested</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell className="flex items-center gap-2">
                     <Megaphone className="h-4 w-4" />

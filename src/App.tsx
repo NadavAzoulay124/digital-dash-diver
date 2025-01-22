@@ -17,7 +17,7 @@ const App = () => (
       <BrowserRouter>
         <nav className="bg-primary p-4 text-white">
           <div className="max-w-7xl mx-auto flex gap-4">
-            <Link to="/agency" className="hover:text-primary-foreground/80">
+            <Link to="/" className="hover:text-primary-foreground/80">
               Agency Dashboard
             </Link>
             <Link to="/client" className="hover:text-primary-foreground/80">

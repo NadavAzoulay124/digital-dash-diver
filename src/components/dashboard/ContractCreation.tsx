@@ -20,7 +20,7 @@ interface Service {
   selected: boolean;
 }
 
-const ContractCreation = () => {
+export const ContractCreation = () => {
   const [clientCompany, setClientCompany] = useState("");
   const [services, setServices] = useState<Service[]>([
     { id: "seo", name: "SEO Services", price: "", selected: false },
@@ -130,5 +130,3 @@ const ContractCreation = () => {
     </Dialog>
   );
 };
-
-export default ContractCreation;

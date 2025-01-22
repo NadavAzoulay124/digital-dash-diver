@@ -98,14 +98,18 @@ export const LeadsBoard = () => {
             <TableBody>
               {leads.map((lead) => (
                 <TableRow key={lead.id}>
-                  <TableCell className="font-medium">{lead.name}</TableCell>
-                  <TableCell className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {lead.date}
+                  <TableCell>{lead.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {lead.date}
+                    </div>
                   </TableCell>
-                  <TableCell className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    {lead.phone}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      {lead.phone}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Select
@@ -123,9 +127,11 @@ export const LeadsBoard = () => {
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell className="flex items-center gap-2">
-                    <Megaphone className="h-4 w-4" />
-                    {lead.source}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Megaphone className="h-4 w-4" />
+                      {lead.source}
+                    </div>
                   </TableCell>
                   <TableCell>{lead.campaign}</TableCell>
                   <TableCell>{lead.adSet}</TableCell>

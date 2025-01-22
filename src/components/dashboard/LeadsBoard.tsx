@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Phone, Megaphone, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { Calendar, Users, Phone, Megaphone } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
@@ -131,22 +131,6 @@ export const LeadsBoard = () => {
                   <TableCell>{lead.campaign}</TableCell>
                   <TableCell>{lead.adSet}</TableCell>
                   <TableCell>{lead.ad}</TableCell>
-                  <TableCell>
-                    <Select
-                      value={lead.status}
-                      onValueChange={(value: Lead["status"]) => handleStatusChange(lead.id, value)}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue>{getStatusBadge(lead.status)}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="New">New</SelectItem>
-                        <SelectItem value="Appointment Scheduled">Appointment Scheduled</SelectItem>
-                        <SelectItem value="Closed">Closed</SelectItem>
-                        <SelectItem value="Not Interested">Not Interested</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

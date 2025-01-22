@@ -3,6 +3,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, Phone, Megaphone, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 interface Lead {
   id: string;
@@ -58,7 +60,18 @@ const getStatusBadge = (status: Lead["status"]) => {
 };
 
 export const LeadsBoard = () => {
-  const [leads] = useState<Lead[]>(mockLeads);
+  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+  const { toast } = useToast();
+
+  const handleStatusChange = (leadId: string, newStatus: Lead["status"]) => {
+    setLeads(leads.map(lead => 
+      lead.id === leadId ? { ...lead, status: newStatus } : lead
+    ));
+    toast({
+      title: "Status Updated",
+      description: `Lead status has been changed to ${newStatus}`,
+    });
+  };
 
   return (
     <Card>
@@ -102,7 +115,22 @@ export const LeadsBoard = () => {
                   <TableCell>{lead.campaign}</TableCell>
                   <TableCell>{lead.adSet}</TableCell>
                   <TableCell>{lead.ad}</TableCell>
-                  <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                  <TableCell>
+                    <Select
+                      value={lead.status}
+                      onValueChange={(value: Lead["status"]) => handleStatusChange(lead.id, value)}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue>{getStatusBadge(lead.status)}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="New">New</SelectItem>
+                        <SelectItem value="Appointment Scheduled">Appointment Scheduled</SelectItem>
+                        <SelectItem value="Closed">Closed</SelectItem>
+                        <SelectItem value="Not Interested">Not Interested</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

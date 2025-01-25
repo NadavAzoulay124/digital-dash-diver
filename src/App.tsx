@@ -16,7 +16,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <nav className="bg-primary p-4 text-white">
-          <div className="max-w-7xl mx-auto flex gap-4">
+          <div className="max-w-7xl mx-auto flex justify-end gap-4">
             <NavLink 
               to="/agency" 
               className={({ isActive }) => 

@@ -4,6 +4,7 @@ import { ClientContactLog } from "@/components/dashboard/ClientContactLog";
 import { AIAssistant } from "@/components/dashboard/AIAssistant";
 import { ConversationSummary } from "@/components/dashboard/ConversationSummary";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
+import { ClientInsights } from "@/components/dashboard/ClientInsights";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -23,6 +24,7 @@ const EmployeeDashboard = () => {
                 <TabsTrigger value="contacts">Client Contacts</TabsTrigger>
                 <TabsTrigger value="conversations">Conversation Summary</TabsTrigger>
                 <TabsTrigger value="assistant">AI Assistant</TabsTrigger>
+                <TabsTrigger value="insights">Client Insights</TabsTrigger>
               </TabsList>
 
               <TabsContent value="tasks">
@@ -43,6 +45,10 @@ const EmployeeDashboard = () => {
 
               <TabsContent value="assistant">
                 <AIAssistant />
+              </TabsContent>
+
+              <TabsContent value="insights">
+                <ClientInsights />
               </TabsContent>
             </Tabs>
           </div>

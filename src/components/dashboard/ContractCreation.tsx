@@ -12,6 +12,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Service {
   id: string;
@@ -19,6 +26,43 @@ interface Service {
   price: string;
   selected: boolean;
 }
+
+interface ContractTemplate {
+  id: string;
+  name: string;
+  services: Service[];
+}
+
+const contractTemplates: ContractTemplate[] = [
+  {
+    id: "starter",
+    name: "Starter Package",
+    services: [
+      { id: "seo", name: "SEO Services", price: "500", selected: true },
+      { id: "social", name: "Social Pages Managing", price: "300", selected: true },
+    ],
+  },
+  {
+    id: "professional",
+    name: "Professional Package",
+    services: [
+      { id: "seo", name: "SEO Services", price: "800", selected: true },
+      { id: "meta", name: "PPC for Meta", price: "500", selected: true },
+      { id: "social", name: "Social Pages Managing", price: "400", selected: true },
+    ],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise Package",
+    services: [
+      { id: "seo", name: "SEO Services", price: "1200", selected: true },
+      { id: "meta", name: "PPC for Meta", price: "800", selected: true },
+      { id: "google", name: "PPC for Google", price: "800", selected: true },
+      { id: "social", name: "Social Pages Managing", price: "600", selected: true },
+      { id: "content", name: "Content Creation", price: "500", selected: true },
+    ],
+  },
+];
 
 export const ContractCreation = () => {
   const [clientCompany, setClientCompany] = useState("");
@@ -46,6 +90,21 @@ export const ContractCreation = () => {
     ));
   };
 
+  const handleTemplateSelection = (templateId: string) => {
+    const template = contractTemplates.find(t => t.id === templateId);
+    if (template) {
+      const updatedServices = services.map(service => {
+        const templateService = template.services.find(ts => ts.id === service.id);
+        if (templateService) {
+          return { ...service, selected: true, price: templateService.price };
+        }
+        return { ...service, selected: false, price: "" };
+      });
+      setServices(updatedServices);
+      toast.success(`Applied ${template.name} template`);
+    }
+  };
+
   const handleSendContract = () => {
     const selectedServices = services.filter(service => service.selected);
     
@@ -64,7 +123,6 @@ export const ContractCreation = () => {
       return;
     }
 
-    // Here you would typically send the contract data to your backend
     toast.success(`Contract created for ${clientCompany}`);
     console.log({
       clientCompany,
@@ -95,6 +153,22 @@ export const ContractCreation = () => {
               onChange={(e) => setClientCompany(e.target.value)}
               placeholder="Enter client company name"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Contract Template</Label>
+            <Select onValueChange={handleTemplateSelection}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a template" />
+              </SelectTrigger>
+              <SelectContent>
+                {contractTemplates.map((template) => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-4">

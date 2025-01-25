@@ -3,18 +3,28 @@ import { CampaignChart } from "@/components/dashboard/CampaignChart";
 import { ClientTaskRequest } from "@/components/dashboard/ClientTaskRequest";
 import { ClientLeadStats } from "@/components/dashboard/ClientLeadStats";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
+import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
+import { CampaignInsights } from "@/components/dashboard/CampaignInsights";
 import { DollarSign, TrendingUp, Users, Target } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 
 const ClientDashboard = () => {
+  const handleDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
+    // In a real app, this would trigger a data refresh based on the selected date range
+    console.log('Date range changed:', { startDate, endDate });
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-dashboard-background">
         <DashboardSidebar role="client" />
         <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold mb-8">Client Overview</h1>
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-2xl font-bold">Client Overview</h1>
+              <DateRangeFilter onDateChange={handleDateChange} />
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <MetricCard
@@ -54,6 +64,10 @@ const ClientDashboard = () => {
               <div>
                 <ClientLeadStats />
               </div>
+            </div>
+
+            <div className="mb-8">
+              <CampaignInsights />
             </div>
 
             <div className="mb-8">

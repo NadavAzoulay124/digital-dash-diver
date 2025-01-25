@@ -17,7 +17,7 @@ const App = () => (
       <BrowserRouter>
         <nav className="bg-primary p-4 text-white">
           <div className="max-w-7xl mx-auto flex gap-4">
-            <Link to="/" className="hover:text-primary-foreground/80">
+            <Link to="/agency" className="hover:text-primary-foreground/80">
               Agency Dashboard
             </Link>
             <Link to="/client" className="hover:text-primary-foreground/80">
@@ -30,6 +30,7 @@ const App = () => (
         </nav>
         <Routes>
           <Route path="/" element={<AgencyDashboard />} />
+          <Route path="/agency" element={<AgencyDashboard />} />
           <Route path="/client" element={<ClientDashboard />} />
           <Route path="/employee" element={<EmployeeDashboard />} />
           <Route path="/agency/*" element={<AgencyDashboard />} />

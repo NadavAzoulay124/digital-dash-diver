@@ -18,7 +18,7 @@ const App = () => (
         <nav className="bg-primary p-4 text-white">
           <div className="max-w-7xl mx-auto flex gap-4">
             <NavLink 
-              to="/" 
+              to="/agency" 
               className={({ isActive }) => 
                 `hover:text-primary-foreground/80 ${isActive ? 'font-bold' : ''}`
               }
@@ -48,6 +48,7 @@ const App = () => (
         </nav>
         <Routes>
           <Route path="/" element={<AgencyDashboard />} />
+          <Route path="/agency/*" element={<AgencyDashboard />} />
           <Route path="/client/*" element={<ClientDashboard />} />
           <Route path="/employee/*" element={<EmployeeDashboard />} />
         </Routes>

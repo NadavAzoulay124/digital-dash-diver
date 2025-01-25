@@ -22,6 +22,7 @@ const App = () => (
               className={({ isActive }) => 
                 `hover:text-primary-foreground/80 ${isActive ? 'font-bold' : ''}`
               }
+              end
             >
               Agency Dashboard
             </NavLink>
@@ -30,6 +31,7 @@ const App = () => (
               className={({ isActive }) => 
                 `hover:text-primary-foreground/80 ${isActive ? 'font-bold' : ''}`
               }
+              end
             >
               Client Dashboard
             </NavLink>
@@ -38,6 +40,7 @@ const App = () => (
               className={({ isActive }) => 
                 `hover:text-primary-foreground/80 ${isActive ? 'font-bold' : ''}`
               }
+              end
             >
               Employee Dashboard
             </NavLink>

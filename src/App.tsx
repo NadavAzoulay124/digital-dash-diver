@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import AgencyDashboard from "./pages/AgencyDashboard";
 import ClientDashboard from "./pages/ClientDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
@@ -17,15 +17,30 @@ const App = () => (
       <BrowserRouter>
         <nav className="bg-primary p-4 text-white">
           <div className="max-w-7xl mx-auto flex gap-4">
-            <Link to="/" className="hover:text-primary-foreground/80">
+            <NavLink 
+              to="/" 
+              className={({ isActive }) => 
+                `hover:text-primary-foreground/80 ${isActive ? 'font-bold' : ''}`
+              }
+            >
               Agency Dashboard
-            </Link>
-            <Link to="/client" className="hover:text-primary-foreground/80">
+            </NavLink>
+            <NavLink 
+              to="/client" 
+              className={({ isActive }) => 
+                `hover:text-primary-foreground/80 ${isActive ? 'font-bold' : ''}`
+              }
+            >
               Client Dashboard
-            </Link>
-            <Link to="/employee" className="hover:text-primary-foreground/80">
+            </NavLink>
+            <NavLink 
+              to="/employee" 
+              className={({ isActive }) => 
+                `hover:text-primary-foreground/80 ${isActive ? 'font-bold' : ''}`
+              }
+            >
               Employee Dashboard
-            </Link>
+            </NavLink>
           </div>
         </nav>
         <Routes>

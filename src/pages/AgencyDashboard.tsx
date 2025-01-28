@@ -7,6 +7,7 @@ import { InvoiceManagement } from "@/components/dashboard/InvoiceManagement";
 import { LeadStatusSummary } from "@/components/dashboard/LeadStatusSummary";
 import { ClientLeadStats } from "@/components/dashboard/ClientLeadStats";
 import { ClientOnboarding } from "@/components/dashboard/ClientOnboarding";
+import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,6 +75,7 @@ const AgencyDashboard = () => {
                 <TabsTrigger value="contracts">Contracts</TabsTrigger>
                 <TabsTrigger value="invoices">Invoices</TabsTrigger>
                 <TabsTrigger value="onboarding">Client Onboarding</TabsTrigger>
+                <TabsTrigger value="onboarding-progress">Onboarding Progress</TabsTrigger>
               </TabsList>
               
               <TabsContent value="tasks">
@@ -114,6 +116,10 @@ const AgencyDashboard = () => {
 
               <TabsContent value="onboarding">
                 <ClientOnboarding />
+              </TabsContent>
+
+              <TabsContent value="onboarding-progress">
+                <OnboardingProgress />
               </TabsContent>
             </Tabs>
           </div>

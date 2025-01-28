@@ -21,9 +21,92 @@ interface Lead {
   source: string;
 }
 
+const initialLeads: Lead[] = [
+  {
+    id: "1",
+    name: "John Smith",
+    email: "john.smith@email.com",
+    phone: "(555) 123-4567",
+    status: "new",
+    source: "website"
+  },
+  {
+    id: "2",
+    name: "Sarah Johnson",
+    email: "sarah.j@email.com",
+    phone: "(555) 234-5678",
+    status: "closed",
+    source: "referral"
+  },
+  {
+    id: "3",
+    name: "Michael Brown",
+    email: "m.brown@email.com",
+    phone: "(555) 345-6789",
+    status: "price-offer",
+    source: "social"
+  },
+  {
+    id: "4",
+    name: "Emma Wilson",
+    email: "emma.w@email.com",
+    phone: "(555) 456-7890",
+    status: "not-interested",
+    source: "email"
+  },
+  {
+    id: "5",
+    name: "David Lee",
+    email: "david.lee@email.com",
+    phone: "(555) 567-8901",
+    status: "new",
+    source: "website"
+  },
+  {
+    id: "6",
+    name: "Lisa Anderson",
+    email: "l.anderson@email.com",
+    phone: "(555) 678-9012",
+    status: "price-offer",
+    source: "referral"
+  },
+  {
+    id: "7",
+    name: "James Taylor",
+    email: "j.taylor@email.com",
+    phone: "(555) 789-0123",
+    status: "closed",
+    source: "social"
+  },
+  {
+    id: "8",
+    name: "Maria Garcia",
+    email: "m.garcia@email.com",
+    phone: "(555) 890-1234",
+    status: "new",
+    source: "email"
+  },
+  {
+    id: "9",
+    name: "Robert Martinez",
+    email: "r.martinez@email.com",
+    phone: "(555) 901-2345",
+    status: "not-interested",
+    source: "website"
+  },
+  {
+    id: "10",
+    name: "Jennifer White",
+    email: "j.white@email.com",
+    phone: "(555) 012-3456",
+    status: "price-offer",
+    source: "referral"
+  }
+];
+
 export const LeadManagement = () => {
   const { toast } = useToast();
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [newLead, setNewLead] = useState({
     name: "",
     email: "",
@@ -135,51 +218,45 @@ export const LeadManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {leads.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                No leads added yet. Add your first lead using the form above.
-              </p>
-            ) : (
-              leads.map((lead) => (
-                <Card key={lead.id}>
-                  <CardContent className="p-4">
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      <div>
-                        <p className="font-medium">{lead.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {lead.email}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <p>{lead.phone}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Status</p>
-                        <Select
-                          value={lead.status}
-                          onValueChange={(value) => handleStatusChange(lead.id, value)}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="new">New</SelectItem>
-                            <SelectItem value="closed">Closed</SelectItem>
-                            <SelectItem value="not-interested">Not Interested</SelectItem>
-                            <SelectItem value="price-offer">Got a Price Offer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Source</p>
-                        <p className="capitalize">{lead.source}</p>
-                      </div>
+            {leads.map((lead) => (
+              <Card key={lead.id}>
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div>
+                      <p className="font-medium">{lead.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {lead.email}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+                    <div>
+                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <p>{lead.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Status</p>
+                      <Select
+                        value={lead.status}
+                        onValueChange={(value) => handleStatusChange(lead.id, value)}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                          <SelectItem value="not-interested">Not Interested</SelectItem>
+                          <SelectItem value="price-offer">Got a Price Offer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Source</p>
+                      <p className="capitalize">{lead.source}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>

@@ -13,32 +13,27 @@ export const ContractTemplateSelector = ({
   selectedTemplate,
   templates,
   onTemplateSelect,
-}: ContractTemplateSelectorProps) => {
-  return (
-    <div className="space-y-2">
-      <Label className="text-sm font-semibold">Contract Template</Label>
-      <Select value={selectedTemplate} onValueChange={onTemplateSelect}>
-        <SelectTrigger className="border-gray-300 focus:border-primary focus:ring-primary">
-          <SelectValue placeholder="Select a template" />
-        </SelectTrigger>
-        <SelectContent>
-          {templates.map((template) => (
-            <SelectItem key={template.id} value={template.id}>
-              {template.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {selectedTemplate && (
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle>{templates.find(t => t.id === selectedTemplate)?.name}</CardTitle>
-            <CardDescription>
-              {templates.find(t => t.id === selectedTemplate)?.description}
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
-    </div>
-  );
-};
+}: ContractTemplateSelectorProps) => (
+  <div className="space-y-2">
+    <Label htmlFor="template" className="text-sm font-semibold text-primary">Contract Template</Label>
+    <Select value={selectedTemplate} onValueChange={onTemplateSelect}>
+      <SelectTrigger className="w-full border-primary/20 focus:ring-primary/30">
+        <SelectValue placeholder="Select a template" />
+      </SelectTrigger>
+      <SelectContent>
+        {templates.map((template) => (
+          <SelectItem
+            key={template.id}
+            value={template.id}
+            className="hover:bg-primary/10 focus:bg-primary/20"
+          >
+            <div className="space-y-1">
+              <div className="font-medium text-primary">{template.name}</div>
+              <div className="text-xs text-primary/70">{template.description}</div>
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);

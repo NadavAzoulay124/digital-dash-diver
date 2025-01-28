@@ -16,8 +16,8 @@ const AgencyDashboard = () => {
       <div className="min-h-screen flex w-full bg-dashboard-background">
         <DashboardSidebar role="agency" />
         <main className="flex-1 p-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div className="flex justify-between items-center">
               <h1 className="text-2xl font-bold">Agency Overview</h1>
               <div className="space-x-4">
                 <ContractCreation />
@@ -25,7 +25,7 @@ const AgencyDashboard = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <MetricCard
                 title="Total Revenue"
                 value="$124.5K"
@@ -56,7 +56,8 @@ const AgencyDashboard = () => {
               />
             </div>
 
-            <div className="mb-8">
+            {/* Lead Status Summary Section */}
+            <div className="bg-white rounded-lg shadow-sm">
               <LeadStatusSummary />
             </div>
 

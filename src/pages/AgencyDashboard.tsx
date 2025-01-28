@@ -5,6 +5,7 @@ import { LeadManagement } from "@/components/dashboard/LeadManagement";
 import { ContractCreation } from "@/components/dashboard/ContractCreation";
 import { InvoiceManagement } from "@/components/dashboard/InvoiceManagement";
 import { LeadStatusSummary } from "@/components/dashboard/LeadStatusSummary";
+import { ClientLeadStats } from "@/components/dashboard/ClientLeadStats";
 import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -56,9 +57,13 @@ const AgencyDashboard = () => {
               />
             </div>
 
-            {/* Lead Status Summary Section */}
-            <div className="bg-white rounded-lg shadow-sm">
-              <LeadStatusSummary />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <LeadStatusSummary />
+              </div>
+              <div>
+                <ClientLeadStats />
+              </div>
             </div>
 
             <Tabs defaultValue="tasks" className="space-y-4">

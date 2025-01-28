@@ -5,8 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, GripVertical, X, Upload } from "lucide-react";
+import { Plus, GripVertical, X, Upload, Repeat } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ChecklistItem {
   id: string;
@@ -20,12 +21,19 @@ interface Comment {
   timestamp: string;
 }
 
+interface RepeatConfig {
+  enabled: boolean;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'custom' | 'none';
+  customDates?: Date[];
+}
+
 interface Task {
   id: string;
   title: string;
   comments: Comment[];
   checklist: ChecklistItem[];
   attachments: string[];
+  repeat: RepeatConfig;
 }
 
 interface Column {
@@ -45,14 +53,16 @@ export const TaskBoard = () => {
           title: "Create social media content calendar",
           comments: [],
           checklist: [],
-          attachments: []
+          attachments: [],
+          repeat: { enabled: false, frequency: 'none' }
         },
         { 
           id: "2", 
           title: "Review Google Ads performance",
           comments: [],
           checklist: [],
-          attachments: []
+          attachments: [],
+          repeat: { enabled: false, frequency: 'none' }
         }
       ]
     },
@@ -65,14 +75,16 @@ export const TaskBoard = () => {
           title: "Design new email templates",
           comments: [],
           checklist: [],
-          attachments: []
+          attachments: [],
+          repeat: { enabled: false, frequency: 'none' }
         },
         { 
           id: "4", 
           title: "Analyze competitor websites",
           comments: [],
           checklist: [],
-          attachments: []
+          attachments: [],
+          repeat: { enabled: false, frequency: 'none' }
         }
       ]
     },
@@ -85,14 +97,16 @@ export const TaskBoard = () => {
           title: "Update client meeting notes",
           comments: [],
           checklist: [],
-          attachments: []
+          attachments: [],
+          repeat: { enabled: false, frequency: 'none' }
         },
         { 
           id: "6", 
           title: "Send monthly performance report",
           comments: [],
           checklist: [],
-          attachments: []
+          attachments: [],
+          repeat: { enabled: false, frequency: 'none' }
         }
       ]
     }
@@ -116,7 +130,8 @@ export const TaskBoard = () => {
             title: newTaskTitle,
             comments: [],
             checklist: [],
-            attachments: []
+            attachments: [],
+            repeat: { enabled: false, frequency: 'none' }
           }]
         };
       }
@@ -257,6 +272,33 @@ export const TaskBoard = () => {
     }));
   };
 
+  const updateTaskRepeat = (frequency: RepeatConfig['frequency']) => {
+    if (!selectedTask || !selectedColumn) return;
+
+    setColumns(columns.map(col => {
+      if (col.id === selectedColumn) {
+        return {
+          ...col,
+          tasks: col.tasks.map(task => {
+            if (task.id === selectedTask.id) {
+              const updatedTask = {
+                ...task,
+                repeat: {
+                  enabled: frequency !== 'none',
+                  frequency
+                }
+              };
+              setSelectedTask(updatedTask);
+              return updatedTask;
+            }
+            return task;
+          })
+        };
+      }
+      return col;
+    }));
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">Task Management</h2>
@@ -276,6 +318,9 @@ export const TaskBoard = () => {
                   <div className="flex items-center gap-2">
                     <GripVertical className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     <span>{task.title}</span>
+                    {task.repeat.enabled && (
+                      <Repeat className="w-4 h-4 text-primary" />
+                    )}
                   </div>
                   <Button
                     variant="ghost"
@@ -326,6 +371,26 @@ export const TaskBoard = () => {
           </DialogHeader>
           
           <div className="space-y-6">
+            {/* Task Repetition Section */}
+            <div className="space-y-4">
+              <h3 className="font-semibold">Task Repetition</h3>
+              <Select
+                value={selectedTask?.repeat.frequency}
+                onValueChange={(value: RepeatConfig['frequency']) => updateTaskRepeat(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select repeat frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No repeat</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="custom">Custom dates</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Comments Section */}
             <div className="space-y-4">
               <h3 className="font-semibold">Comments</h3>

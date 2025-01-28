@@ -4,6 +4,7 @@ import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { LeadManagement } from "@/components/dashboard/LeadManagement";
 import { ContractCreation } from "@/components/dashboard/ContractCreation";
 import { InvoiceManagement } from "@/components/dashboard/InvoiceManagement";
+import { LeadStatusSummary } from "@/components/dashboard/LeadStatusSummary";
 import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,6 +54,10 @@ const AgencyDashboard = () => {
                 isPositive={false}
                 icon={ListChecks}
               />
+            </div>
+
+            <div className="mb-8">
+              <LeadStatusSummary />
             </div>
 
             <Tabs defaultValue="tasks" className="space-y-4">

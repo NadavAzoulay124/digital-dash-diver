@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import SignaturePad from 'react-signature-canvas';
 import {
   Dialog,
   DialogContent,
@@ -46,16 +47,17 @@ interface ContractTemplate {
 const contractTemplates: ContractTemplate[] = [
   {
     id: "starter",
-    name: "Starter Package",
-    description: "A simple, clean template perfect for small businesses",
+    name: "Modern Starter Package",
+    description: "A sleek, contemporary template for small businesses",
     services: [
       { id: "seo", name: "SEO Services", price: "500", selected: true },
       { id: "social", name: "Social Pages Managing", price: "300", selected: true },
     ],
     preview: `
-[Your Agency Logo]
+[Company Logo]
 
 DIGITAL MARKETING SERVICES AGREEMENT
+_________________________________
 
 This Professional Services Agreement (the "Agreement") is made on [Date]
 
@@ -70,6 +72,7 @@ AND:
 ("Client")
 
 SERVICES INCLUDED:
+_________________
 
 1. Search Engine Optimization (SEO) Services
    Investment: $500/month
@@ -90,12 +93,14 @@ SERVICES INCLUDED:
 Total Monthly Investment: $800
 
 Terms & Conditions
+_________________
 • Initial contract term: 3 months
 • Monthly billing on the 1st of each month
 • 30-day notice required for cancellation
 • All prices in USD
 
-[Signature Block]
+[Digital Signature Block]
+
 _____________________
 For [Agency Name]
 
@@ -281,6 +286,8 @@ Website: [Website]
 export const ContractCreation = () => {
   const [clientCompany, setClientCompany] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+  const signaturePadRef = useRef<SignaturePad>(null);
   const [services, setServices] = useState<Service[]>([
     { id: "seo", name: "SEO Services", price: "", selected: false },
     { id: "meta", name: "PPC for Meta", price: "", selected: false },
@@ -288,6 +295,21 @@ export const ContractCreation = () => {
     { id: "social", name: "Social Pages Managing", price: "", selected: false },
     { id: "content", name: "Content Creation", price: "", selected: false },
   ]);
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCompanyLogo(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearSignature = () => {
+    signaturePadRef.current?.clear();
+  };
 
   const handleServiceSelection = (serviceId: string) => {
     setServices(services.map(service => 
@@ -339,11 +361,17 @@ export const ContractCreation = () => {
       return;
     }
 
+    if (!signaturePadRef.current?.isEmpty()) {
+      const signatureData = signaturePadRef.current?.getTrimmedCanvas().toDataURL();
+      console.log('Signature data:', signatureData);
+    }
+
     toast.success(`Contract created for ${clientCompany}`);
     console.log({
       clientCompany,
       services: selectedServices,
       totalValue: selectedServices.reduce((sum, service) => sum + Number(service.price), 0),
+      companyLogo,
     });
   };
 
@@ -363,7 +391,7 @@ export const ContractCreation = () => {
         </DialogHeader>
         
         <div className="grid grid-cols-2 gap-8 h-full">
-          <div className="space-y-6 p-4 bg-gray-50 rounded-lg">
+          <div className="space-y-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg shadow-sm">
             <div className="space-y-2">
               <Label htmlFor="company" className="text-sm font-semibold">Client Company Name</Label>
               <Input
@@ -373,6 +401,22 @@ export const ContractCreation = () => {
                 placeholder="Enter client company name"
                 className="border-gray-300 focus:border-primary focus:ring-primary"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="logo" className="text-sm font-semibold">Company Logo</Label>
+              <Input
+                id="logo"
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="border-gray-300 focus:border-primary focus:ring-primary"
+              />
+              {companyLogo && (
+                <div className="mt-2">
+                  <img src={companyLogo} alt="Company logo" className="h-16 object-contain" />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -394,7 +438,7 @@ export const ContractCreation = () => {
             <div className="space-y-4">
               <Label className="text-sm font-semibold">Select Services</Label>
               {services.map((service) => (
-                <div key={service.id} className="flex items-center space-x-4 p-3 bg-white rounded-lg shadow-sm">
+                <div key={service.id} className="flex items-center space-x-4 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <Checkbox
                     id={service.id}
                     checked={service.selected}
@@ -417,6 +461,26 @@ export const ContractCreation = () => {
               ))}
             </div>
 
+            <div className="space-y-4">
+              <Label className="text-sm font-semibold">Digital Signature</Label>
+              <div className="border rounded-lg p-4 bg-white">
+                <SignaturePad
+                  ref={signaturePadRef}
+                  canvasProps={{
+                    className: "border rounded-lg w-full h-40 cursor-crosshair",
+                    style: { backgroundColor: '#f8fafc' }
+                  }}
+                />
+                <Button 
+                  onClick={clearSignature}
+                  variant="outline" 
+                  className="mt-2"
+                >
+                  Clear Signature
+                </Button>
+              </div>
+            </div>
+
             <Button 
               onClick={handleSendContract} 
               className="w-full bg-primary hover:bg-primary-hover text-white font-semibold"
@@ -426,8 +490,8 @@ export const ContractCreation = () => {
           </div>
 
           <div className="border-l pl-6">
-            <Card className="h-full bg-white shadow-lg">
-              <CardHeader className="border-b">
+            <Card className="h-full bg-gradient-to-br from-white to-gray-50 shadow-lg">
+              <CardHeader className="border-b bg-white bg-opacity-70">
                 <CardTitle className="text-xl font-bold text-primary">Contract Preview</CardTitle>
                 <CardDescription>
                   {selectedTemplate 
@@ -437,7 +501,10 @@ export const ContractCreation = () => {
               </CardHeader>
               <CardContent className="p-6">
                 <ScrollArea className="h-[600px] w-full rounded-md">
-                  <div className="whitespace-pre-wrap font-mono text-sm bg-white p-8 border rounded-lg">
+                  <div className="whitespace-pre-wrap font-mono text-sm bg-white p-8 border rounded-lg shadow-sm">
+                    {companyLogo && (
+                      <img src={companyLogo} alt="Company logo" className="h-16 object-contain mb-4" />
+                    )}
                     {selectedTemplate
                       ? contractTemplates.find(t => t.id === selectedTemplate)?.preview
                       : "No template selected"}

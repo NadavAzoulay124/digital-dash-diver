@@ -75,7 +75,6 @@ const AgencyDashboard = () => {
                 <TabsTrigger value="contracts">Contracts</TabsTrigger>
                 <TabsTrigger value="invoices">Invoices</TabsTrigger>
                 <TabsTrigger value="onboarding">Client Onboarding</TabsTrigger>
-                <TabsTrigger value="onboarding-progress">Onboarding Progress</TabsTrigger>
               </TabsList>
               
               <TabsContent value="tasks">
@@ -115,11 +114,10 @@ const AgencyDashboard = () => {
               </TabsContent>
 
               <TabsContent value="onboarding">
-                <ClientOnboarding />
-              </TabsContent>
-
-              <TabsContent value="onboarding-progress">
-                <OnboardingProgress />
+                <div className="space-y-8">
+                  <ClientOnboarding />
+                  <OnboardingProgress />
+                </div>
               </TabsContent>
             </Tabs>
           </div>

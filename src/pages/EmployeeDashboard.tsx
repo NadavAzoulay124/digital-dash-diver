@@ -1,8 +1,7 @@
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
-import { ClientContactLog } from "@/components/dashboard/ClientContactLog";
+import { ClientContactDashboard } from "@/components/dashboard/ClientContactDashboard";
 import { AIAssistant } from "@/components/dashboard/AIAssistant";
-import { ConversationSummary } from "@/components/dashboard/ConversationSummary";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { ClientInsights } from "@/components/dashboard/ClientInsights";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -17,15 +16,18 @@ const EmployeeDashboard = () => {
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl font-bold mb-8">Employee Dashboard</h1>
             
-            <Tabs defaultValue="tasks" className="space-y-6">
+            <Tabs defaultValue="contacts" className="space-y-6">
               <TabsList>
+                <TabsTrigger value="contacts">Client Contacts</TabsTrigger>
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
                 <TabsTrigger value="leads">Campaign Leads</TabsTrigger>
-                <TabsTrigger value="contacts">Client Contacts</TabsTrigger>
-                <TabsTrigger value="conversations">Conversation Summary</TabsTrigger>
                 <TabsTrigger value="assistant">AI Assistant</TabsTrigger>
                 <TabsTrigger value="insights">Client Insights</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="contacts">
+                <ClientContactDashboard />
+              </TabsContent>
 
               <TabsContent value="tasks">
                 <TaskBoard />
@@ -33,14 +35,6 @@ const EmployeeDashboard = () => {
 
               <TabsContent value="leads">
                 <LeadsBoard />
-              </TabsContent>
-
-              <TabsContent value="contacts">
-                <ClientContactLog />
-              </TabsContent>
-
-              <TabsContent value="conversations">
-                <ConversationSummary />
               </TabsContent>
 
               <TabsContent value="assistant">

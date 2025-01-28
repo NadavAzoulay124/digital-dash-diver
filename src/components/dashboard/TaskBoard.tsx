@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -151,7 +151,7 @@ export const TaskBoard = () => {
           ...col,
           tasks: col.tasks.map(task => {
             if (task.id === selectedTask.id) {
-              return {
+              const updatedTask = {
                 ...task,
                 comments: [...task.comments, {
                   id: Date.now().toString(),
@@ -159,6 +159,8 @@ export const TaskBoard = () => {
                   timestamp: new Date().toLocaleString()
                 }]
               };
+              setSelectedTask(updatedTask);
+              return updatedTask;
             }
             return task;
           })
@@ -178,7 +180,7 @@ export const TaskBoard = () => {
           ...col,
           tasks: col.tasks.map(task => {
             if (task.id === selectedTask.id) {
-              return {
+              const updatedTask = {
                 ...task,
                 checklist: [...task.checklist, {
                   id: Date.now().toString(),
@@ -186,6 +188,8 @@ export const TaskBoard = () => {
                   completed: false
                 }]
               };
+              setSelectedTask(updatedTask);
+              return updatedTask;
             }
             return task;
           })
@@ -205,7 +209,7 @@ export const TaskBoard = () => {
           ...col,
           tasks: col.tasks.map(task => {
             if (task.id === selectedTask.id) {
-              return {
+              const updatedTask = {
                 ...task,
                 checklist: task.checklist.map(item => {
                   if (item.id === itemId) {
@@ -214,6 +218,8 @@ export const TaskBoard = () => {
                   return item;
                 })
               };
+              setSelectedTask(updatedTask);
+              return updatedTask;
             }
             return task;
           })
@@ -227,18 +233,21 @@ export const TaskBoard = () => {
     const file = event.target.files?.[0];
     if (!file || !selectedTask || !selectedColumn) return;
 
-    // In a real application, you would upload the file to a server
-    // For now, we'll just store the file name
+    // Create a URL for the uploaded file
+    const fileUrl = URL.createObjectURL(file);
+
     setColumns(columns.map(col => {
       if (col.id === selectedColumn) {
         return {
           ...col,
           tasks: col.tasks.map(task => {
             if (task.id === selectedTask.id) {
-              return {
+              const updatedTask = {
                 ...task,
-                attachments: [...task.attachments, file.name]
+                attachments: [...task.attachments, fileUrl]
               };
+              setSelectedTask(updatedTask);
+              return updatedTask;
             }
             return task;
           })
@@ -311,6 +320,9 @@ export const TaskBoard = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{selectedTask?.title}</DialogTitle>
+            <DialogDescription>
+              Add comments, checklist items, or attachments to this task.
+            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-6">
@@ -342,12 +354,16 @@ export const TaskBoard = () => {
                 {selectedTask?.checklist.map(item => (
                   <div key={item.id} className="flex items-center gap-2">
                     <Checkbox
+                      id={item.id}
                       checked={item.completed}
                       onCheckedChange={() => toggleChecklistItem(item.id)}
                     />
-                    <span className={item.completed ? "line-through" : ""}>
+                    <label
+                      htmlFor={item.id}
+                      className={`${item.completed ? "line-through text-muted-foreground" : ""}`}
+                    >
                       {item.text}
-                    </span>
+                    </label>
                   </div>
                 ))}
               </div>
@@ -356,6 +372,11 @@ export const TaskBoard = () => {
                   placeholder="Add checklist item..."
                   value={newChecklistItem}
                   onChange={(e) => setNewChecklistItem(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      addChecklistItem();
+                    }
+                  }}
                 />
                 <Button onClick={addChecklistItem}>Add</Button>
               </div>
@@ -364,11 +385,14 @@ export const TaskBoard = () => {
             {/* Attachments Section */}
             <div className="space-y-4">
               <h3 className="font-semibold">Attachments</h3>
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-4">
                 {selectedTask?.attachments.map((attachment, index) => (
-                  <div key={index} className="bg-muted p-2 rounded flex items-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    <span>{attachment}</span>
+                  <div key={index} className="relative group">
+                    <img
+                      src={attachment}
+                      alt={`Attachment ${index + 1}`}
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
                   </div>
                 ))}
               </div>
@@ -381,6 +405,7 @@ export const TaskBoard = () => {
                   <Input
                     id="file"
                     type="file"
+                    accept="image/*"
                     className="hidden"
                     onChange={handleFileUpload}
                   />

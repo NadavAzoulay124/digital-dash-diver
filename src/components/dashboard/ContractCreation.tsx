@@ -53,22 +53,56 @@ const contractTemplates: ContractTemplate[] = [
       { id: "social", name: "Social Pages Managing", price: "300", selected: true },
     ],
     preview: `
-Digital Marketing Services Agreement
+[Your Agency Logo]
 
-This agreement is made between [Agency Name] and [Client Company]
+DIGITAL MARKETING SERVICES AGREEMENT
 
-Services Included:
-1. SEO Services ($500/month)
-   - Keyword Research
-   - On-page Optimization
-   - Monthly Reports
+This Professional Services Agreement (the "Agreement") is made on [Date]
 
-2. Social Media Management ($300/month)
-   - Content Calendar
-   - Daily Posts
-   - Engagement Monitoring
+BETWEEN:
+[Your Agency Name]
+[Your Agency Address]
+("Agency")
+
+AND:
+[Client Company]
+[Client Address]
+("Client")
+
+SERVICES INCLUDED:
+
+1. Search Engine Optimization (SEO) Services
+   Investment: $500/month
+   • Comprehensive Keyword Research
+   • On-page SEO Optimization
+   • Monthly Performance Reports
+   • Search Ranking Monitoring
+   • Content Optimization
+
+2. Social Media Management
+   Investment: $300/month
+   • Strategic Content Calendar
+   • Daily Platform Management
+   • Community Engagement
+   • Performance Analytics
+   • Monthly Strategy Review
 
 Total Monthly Investment: $800
+
+Terms & Conditions
+• Initial contract term: 3 months
+• Monthly billing on the 1st of each month
+• 30-day notice required for cancellation
+• All prices in USD
+
+[Signature Block]
+_____________________
+For [Agency Name]
+
+_____________________
+For [Client Company]
+
+Contact: [Your Email] | [Your Phone]
     `
   },
   {
@@ -81,30 +115,64 @@ Total Monthly Investment: $800
       { id: "social", name: "Social Pages Managing", price: "400", selected: true },
     ],
     preview: `
-Digital Marketing Service Contract
+[Your Agency Logo]
 
-AGREEMENT between [Agency Name] ("Agency") and [Client Company] ("Client")
+COMPREHENSIVE DIGITAL MARKETING AGREEMENT
 
-1. SCOPE OF SERVICES
-   a) SEO Services ($800/month)
-      - Advanced Keyword Research
-      - Technical SEO
-      - Content Strategy
-      - Monthly Performance Reports
+MASTER SERVICE AGREEMENT
+Date: [Current Date]
 
-   b) Meta Advertising ($500/month)
-      - Campaign Setup
-      - Ad Creation
-      - Audience Targeting
-      - Performance Optimization
+PARTIES:
+[Your Agency Name] ("Agency")
+[Client Company Name] ("Client")
 
-   c) Social Media Management ($400/month)
-      - Content Strategy
-      - Daily Posts
-      - Community Management
-      - Analytics Reports
+SERVICE SCOPE & INVESTMENT
+
+1. Advanced SEO Services
+   Monthly Investment: $800
+   • Technical SEO Audit & Implementation
+   • Content Strategy Development
+   • Keyword Research & Mapping
+   • Competitor Analysis
+   • Monthly Performance Reports
+   • Search Console Optimization
+
+2. Meta Advertising Management
+   Monthly Investment: $500
+   • Campaign Strategy & Setup
+   • Custom Audience Creation
+   • Ad Creative Development
+   • A/B Testing
+   • Performance Optimization
+   • ROI Tracking & Reporting
+
+3. Professional Social Media Management
+   Monthly Investment: $400
+   • Multi-Platform Strategy
+   • Content Calendar & Creation
+   • Community Management
+   • Engagement Monitoring
+   • Crisis Management
+   • Analytics & Reporting
 
 Total Monthly Investment: $1,700
+
+Terms of Service
+• 6-month initial commitment
+• Monthly billing in advance
+• 45-day cancellation notice
+• Performance reviews every 90 days
+
+By signing below, both parties agree to the terms and conditions outlined in this agreement.
+
+[Signature Block]
+_____________________
+Agency Representative
+
+_____________________
+Client Representative
+
+[Your Agency Contact Details]
     `
   },
   {
@@ -119,41 +187,93 @@ Total Monthly Investment: $1,700
       { id: "content", name: "Content Creation", price: "500", selected: true },
     ],
     preview: `
-Enterprise Digital Marketing Agreement
+[Your Agency Logo]
 
-MASTER SERVICE AGREEMENT
+ENTERPRISE DIGITAL MARKETING PARTNERSHIP
 
-Between [Agency Name] and [Client Company]
+STRATEGIC PARTNERSHIP AGREEMENT
+Effective Date: [Date]
 
-COMPREHENSIVE DIGITAL MARKETING SERVICES:
+BETWEEN:
+[Your Agency Name]
+A leading digital marketing agency
+[Your Address]
 
-1. Enterprise SEO Package ($1,200/month)
-   - Advanced Technical SEO
-   - Content Strategy & Creation
-   - Link Building
-   - Weekly Reports
+AND:
+[Client Company]
+[Client Address]
 
-2. PPC Management
-   a) Meta Advertising ($800/month)
-   b) Google Ads ($800/month)
-   - Campaign Strategy
-   - Ad Creation & Testing
-   - Conversion Tracking
-   - ROI Optimization
+COMPREHENSIVE SERVICE SUITE
 
-3. Social Media Management ($600/month)
-   - Multi-platform Management
-   - Content Calendar
-   - Community Engagement
-   - Crisis Management
+1. Enterprise SEO & Content Strategy
+   Monthly Investment: $1,200
+   • Advanced Technical SEO
+   • Content Strategy & Creation
+   • Link Building Campaign
+   • Competitive Analysis
+   • Monthly Executive Reports
+   • Dedicated SEO Specialist
 
-4. Content Creation ($500/month)
-   - Blog Posts
-   - Social Media Content
-   - Email Newsletters
-   - Infographics
+2. Paid Advertising Management
+   Total Monthly Investment: $1,600
+   
+   a) Meta Advertising ($800)
+   • Campaign Strategy
+   • Custom Audience Development
+   • Creative A/B Testing
+   • Performance Optimization
+   
+   b) Google Ads ($800)
+   • Search Campaign Management
+   • Display Network Optimization
+   • Conversion Tracking
+   • ROI Maximization
+
+3. Premium Social Media Management
+   Monthly Investment: $600
+   • Strategic Planning
+   • Content Creation
+   • Community Management
+   • Crisis Management
+   • Performance Analytics
+
+4. Professional Content Creation
+   Monthly Investment: $500
+   • Blog Articles
+   • Social Media Content
+   • Email Newsletters
+   • Infographics
+   • Video Scripts
 
 Total Monthly Investment: $3,900
+
+Partnership Terms
+• 12-month strategic partnership
+• Quarterly strategy reviews
+• Dedicated account manager
+• Priority support
+• Monthly executive reports
+
+This agreement represents a partnership commitment to achieving measurable digital marketing success.
+
+[Signature Block]
+________________________
+[Your Agency Name]
+By: [Name]
+Title: [Title]
+Date: [Date]
+
+________________________
+[Client Company]
+By: [Name]
+Title: [Title]
+Date: [Date]
+
+Contact Information
+[Your Agency Name]
+Email: [Email]
+Phone: [Phone]
+Website: [Website]
     `
   },
 ];
@@ -230,32 +350,35 @@ export const ContractCreation = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">Create New Contract</Button>
+        <Button variant="default" className="bg-primary hover:bg-primary-hover text-white">
+          Create New Contract
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] h-[80vh]">
+      <DialogContent className="sm:max-w-[1200px] h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Create Contract</DialogTitle>
-          <DialogDescription>
-            Select a template and customize services for your contract
+          <DialogTitle className="text-2xl font-bold text-primary">Create Professional Contract</DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Select a template and customize services for your client contract
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-2 gap-6 h-full">
-          <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-8 h-full">
+          <div className="space-y-6 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-2">
-              <Label htmlFor="company">Client Company Name</Label>
+              <Label htmlFor="company" className="text-sm font-semibold">Client Company Name</Label>
               <Input
                 id="company"
                 value={clientCompany}
                 onChange={(e) => setClientCompany(e.target.value)}
                 placeholder="Enter client company name"
+                className="border-gray-300 focus:border-primary focus:ring-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Contract Template</Label>
+              <Label className="text-sm font-semibold">Contract Template</Label>
               <Select value={selectedTemplate} onValueChange={handleTemplateSelection}>
-                <SelectTrigger>
+                <SelectTrigger className="border-gray-300 focus:border-primary focus:ring-primary">
                   <SelectValue placeholder="Select a template" />
                 </SelectTrigger>
                 <SelectContent>
@@ -269,15 +392,16 @@ export const ContractCreation = () => {
             </div>
 
             <div className="space-y-4">
-              <Label>Select Services</Label>
+              <Label className="text-sm font-semibold">Select Services</Label>
               {services.map((service) => (
-                <div key={service.id} className="flex items-center space-x-4">
+                <div key={service.id} className="flex items-center space-x-4 p-3 bg-white rounded-lg shadow-sm">
                   <Checkbox
                     id={service.id}
                     checked={service.selected}
                     onCheckedChange={() => handleServiceSelection(service.id)}
+                    className="text-primary focus:ring-primary"
                   />
-                  <Label htmlFor={service.id} className="flex-1">
+                  <Label htmlFor={service.id} className="flex-1 font-medium">
                     {service.name}
                   </Label>
                   {service.selected && (
@@ -286,35 +410,38 @@ export const ContractCreation = () => {
                       placeholder="Price"
                       value={service.price}
                       onChange={(e) => handlePriceChange(service.id, e.target.value)}
-                      className="w-32"
+                      className="w-32 border-gray-300 focus:border-primary focus:ring-primary"
                     />
                   )}
                 </div>
               ))}
             </div>
 
-            <Button onClick={handleSendContract} className="w-full">
-              Send Contract
+            <Button 
+              onClick={handleSendContract} 
+              className="w-full bg-primary hover:bg-primary-hover text-white font-semibold"
+            >
+              Generate & Send Contract
             </Button>
           </div>
 
           <div className="border-l pl-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Template Preview</CardTitle>
+            <Card className="h-full bg-white shadow-lg">
+              <CardHeader className="border-b">
+                <CardTitle className="text-xl font-bold text-primary">Contract Preview</CardTitle>
                 <CardDescription>
                   {selectedTemplate 
                     ? contractTemplates.find(t => t.id === selectedTemplate)?.description 
                     : "Select a template to see preview"}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-                  <pre className="whitespace-pre-wrap font-mono text-sm">
+              <CardContent className="p-6">
+                <ScrollArea className="h-[600px] w-full rounded-md">
+                  <div className="whitespace-pre-wrap font-mono text-sm bg-white p-8 border rounded-lg">
                     {selectedTemplate
                       ? contractTemplates.find(t => t.id === selectedTemplate)?.preview
                       : "No template selected"}
-                  </pre>
+                  </div>
                 </ScrollArea>
               </CardContent>
             </Card>

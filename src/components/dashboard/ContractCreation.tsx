@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import SignaturePad from 'react-signature-canvas';
 import {
   Dialog,
@@ -13,36 +12,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface Service {
-  id: string;
-  name: string;
-  price: string;
-  selected: boolean;
-}
-
-interface ContractTemplate {
-  id: string;
-  name: string;
-  description: string;
-  services: Service[];
-  preview: string;
-}
+import { ContractTemplateSelector } from "./contract/ContractTemplateSelector";
+import { ServiceSelector } from "./contract/ServiceSelector";
+import { LogoUploader } from "./contract/LogoUploader";
+import { SignaturePad as SignaturePadComponent } from "./contract/SignaturePad";
+import { ContractPreview } from "./contract/ContractPreview";
+import { Service, ContractTemplate } from "./contract/types";
 
 const contractTemplates: ContractTemplate[] = [
   {
@@ -403,83 +378,27 @@ export const ContractCreation = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="logo" className="text-sm font-semibold">Company Logo</Label>
-              <Input
-                id="logo"
-                type="file"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="border-gray-300 focus:border-primary focus:ring-primary"
-              />
-              {companyLogo && (
-                <div className="mt-2">
-                  <img src={companyLogo} alt="Company logo" className="h-16 object-contain" />
-                </div>
-              )}
-            </div>
+            <LogoUploader 
+              companyLogo={companyLogo}
+              onLogoUpload={handleLogoUpload}
+            />
 
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">Contract Template</Label>
-              <Select value={selectedTemplate} onValueChange={handleTemplateSelection}>
-                <SelectTrigger className="border-gray-300 focus:border-primary focus:ring-primary">
-                  <SelectValue placeholder="Select a template" />
-                </SelectTrigger>
-                <SelectContent>
-                  {contractTemplates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <ContractTemplateSelector
+              selectedTemplate={selectedTemplate}
+              templates={contractTemplates}
+              onTemplateSelect={handleTemplateSelection}
+            />
 
-            <div className="space-y-4">
-              <Label className="text-sm font-semibold">Select Services</Label>
-              {services.map((service) => (
-                <div key={service.id} className="flex items-center space-x-4 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <Checkbox
-                    id={service.id}
-                    checked={service.selected}
-                    onCheckedChange={() => handleServiceSelection(service.id)}
-                    className="text-primary focus:ring-primary"
-                  />
-                  <Label htmlFor={service.id} className="flex-1 font-medium">
-                    {service.name}
-                  </Label>
-                  {service.selected && (
-                    <Input
-                      type="number"
-                      placeholder="Price"
-                      value={service.price}
-                      onChange={(e) => handlePriceChange(service.id, e.target.value)}
-                      className="w-32 border-gray-300 focus:border-primary focus:ring-primary"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+            <ServiceSelector
+              services={services}
+              onServiceSelection={handleServiceSelection}
+              onPriceChange={handlePriceChange}
+            />
 
-            <div className="space-y-4">
-              <Label className="text-sm font-semibold">Digital Signature</Label>
-              <div className="border rounded-lg p-4 bg-white">
-                <SignaturePad
-                  ref={signaturePadRef}
-                  canvasProps={{
-                    className: "border rounded-lg w-full h-40 cursor-crosshair",
-                    style: { backgroundColor: '#f8fafc' }
-                  }}
-                />
-                <Button 
-                  onClick={clearSignature}
-                  variant="outline" 
-                  className="mt-2"
-                >
-                  Clear Signature
-                </Button>
-              </div>
-            </div>
+            <SignaturePadComponent
+              onClear={clearSignature}
+              signaturePadRef={signaturePadRef}
+            />
 
             <Button 
               onClick={handleSendContract} 
@@ -490,28 +409,11 @@ export const ContractCreation = () => {
           </div>
 
           <div className="border-l pl-6">
-            <Card className="h-full bg-gradient-to-br from-white to-gray-50 shadow-lg">
-              <CardHeader className="border-b bg-white bg-opacity-70">
-                <CardTitle className="text-xl font-bold text-primary">Contract Preview</CardTitle>
-                <CardDescription>
-                  {selectedTemplate 
-                    ? contractTemplates.find(t => t.id === selectedTemplate)?.description 
-                    : "Select a template to see preview"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <ScrollArea className="h-[600px] w-full rounded-md">
-                  <div className="whitespace-pre-wrap font-mono text-sm bg-white p-8 border rounded-lg shadow-sm">
-                    {companyLogo && (
-                      <img src={companyLogo} alt="Company logo" className="h-16 object-contain mb-4" />
-                    )}
-                    {selectedTemplate
-                      ? contractTemplates.find(t => t.id === selectedTemplate)?.preview
-                      : "No template selected"}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+            <ContractPreview
+              selectedTemplate={selectedTemplate}
+              templates={contractTemplates}
+              companyLogo={companyLogo}
+            />
           </div>
         </div>
       </DialogContent>

@@ -83,6 +83,11 @@ export const TaskBoard = () => {
         ]
       },
       {
+        id: "cm-followup",
+        title: "Follow Up",
+        tasks: []
+      },
+      {
         id: "cm-done",
         title: "Done",
         tasks: []
@@ -118,6 +123,11 @@ export const TaskBoard = () => {
         ]
       },
       {
+        id: "d-followup",
+        title: "Follow Up",
+        tasks: []
+      },
+      {
         id: "d-done",
         title: "Done",
         tasks: []
@@ -151,6 +161,11 @@ export const TaskBoard = () => {
             repeat: { enabled: false, frequency: 'none' }
           }
         ]
+      },
+      {
+        id: "scm-followup",
+        title: "Follow Up",
+        tasks: []
       },
       {
         id: "scm-done",
@@ -391,11 +406,21 @@ export const TaskBoard = () => {
 
         {EMPLOYEE_ROLES.map((role) => (
           <TabsContent key={role} value={role}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {roleColumns[role].map(column => (
-                <Card key={column.id} className="bg-muted/50">
+                <Card key={column.id} className={`bg-muted/50 ${
+                  column.title === 'To Do' ? 'border-l-4 border-warning' :
+                  column.title === 'In Progress' ? 'border-l-4 border-ocean' :
+                  column.title === 'Follow Up' ? 'border-l-4 border-primary' :
+                  'border-l-4 border-success'
+                }`}>
                   <CardHeader>
-                    <CardTitle className="text-lg">{column.title}</CardTitle>
+                    <CardTitle className={`text-lg ${
+                      column.title === 'To Do' ? 'text-warning' :
+                      column.title === 'In Progress' ? 'text-ocean' :
+                      column.title === 'Follow Up' ? 'text-primary' :
+                      'text-success'
+                    }`}>{column.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {column.tasks.map(task => (

@@ -51,7 +51,11 @@ const EMPLOYEE_ROLES = [
 
 type EmployeeRole = typeof EMPLOYEE_ROLES[number];
 
-export const TaskBoard = () => {
+interface TaskBoardProps {
+  tasks: any[];
+}
+
+export const TaskBoard = ({ tasks }: TaskBoardProps) => {
   const [roleColumns, setRoleColumns] = useState<Record<EmployeeRole, Column[]>>({
     "Customer Manager": [
       {

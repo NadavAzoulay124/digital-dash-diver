@@ -23,15 +23,22 @@ const ignoredTasks = [
     employee: "John Doe",
     task: "Client feedback implementation",
     lastUpdated: "2024-02-15",
-    daysIgnored: 30,
+    daysIgnored: 10,
   },
   {
     id: 2,
     employee: "Jane Smith",
     task: "Website optimization",
     lastUpdated: "2024-02-20",
-    daysIgnored: 25,
+    daysIgnored: 8,
   },
+  {
+    id: 3,
+    employee: "Mike Johnson",
+    task: "Social media content calendar",
+    lastUpdated: "2024-02-18",
+    daysIgnored: 9,
+  }
 ];
 
 const AgencyDashboard = () => {

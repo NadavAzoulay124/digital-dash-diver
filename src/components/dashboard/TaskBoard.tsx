@@ -90,8 +90,8 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 min-h-[600px] overflow-x-auto pb-4">
-          <Card className="bg-muted/50 border-l-4 border-warning flex-1 min-w-[300px]">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="bg-muted/50 border-l-4 border-warning">
             <CardHeader>
               <CardTitle className="text-lg text-warning">To Do</CardTitle>
             </CardHeader>
@@ -124,7 +124,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
             </Droppable>
           </Card>
 
-          <Card className="bg-muted/50 border-l-4 border-ocean flex-1 min-w-[300px]">
+          <Card className="bg-muted/50 border-l-4 border-ocean">
             <CardHeader>
               <CardTitle className="text-lg text-ocean">In Progress</CardTitle>
             </CardHeader>
@@ -157,7 +157,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
             </Droppable>
           </Card>
 
-          <Card className="bg-muted/50 border-l-4 border-primary flex-1 min-w-[300px]">
+          <Card className="bg-muted/50 border-l-4 border-primary">
             <CardHeader>
               <CardTitle className="text-lg text-primary">Follow Up</CardTitle>
             </CardHeader>
@@ -190,7 +190,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
             </Droppable>
           </Card>
 
-          <Card className="bg-muted/50 border-l-4 border-success flex-1 min-w-[300px]">
+          <Card className="bg-muted/50 border-l-4 border-success">
             <CardHeader>
               <CardTitle className="text-lg text-success">Done</CardTitle>
             </CardHeader>

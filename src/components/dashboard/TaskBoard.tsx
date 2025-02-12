@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { Task } from "@/data/mockTasks";
 import { GripVertical } from "lucide-react";
@@ -74,19 +73,17 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Select value={selectedRole} onValueChange={(value: CompanyRole) => setSelectedRole(value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select role" />
-          </SelectTrigger>
-          <SelectContent>
-            {COMPANY_ROLES.map((role) => (
-              <SelectItem key={role} value={role}>
-                {role}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+        {COMPANY_ROLES.map((role) => (
+          <Button
+            key={role}
+            variant={selectedRole === role ? "default" : "outline"}
+            onClick={() => setSelectedRole(role)}
+            className="whitespace-nowrap"
+          >
+            {role}
+          </Button>
+        ))}
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>

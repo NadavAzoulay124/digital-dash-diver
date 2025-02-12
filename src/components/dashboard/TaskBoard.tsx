@@ -6,23 +6,35 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautif
 import { Task } from "@/data/mockTasks";
 import { GripVertical } from "lucide-react";
 
-const EMPLOYEE_ROLES = [
-  "John Doe",
-  "Jane Smith",
-  "Mike Johnson"
+const COMPANY_ROLES = [
+  "agency",
+  "client",
+  "employee"
 ] as const;
 
-type EmployeeRole = typeof EMPLOYEE_ROLES[number];
+type CompanyRole = typeof COMPANY_ROLES[number];
 
 interface TaskBoardProps {
   tasks: Task[];
 }
 
 export const TaskBoard = ({ tasks }: TaskBoardProps) => {
-  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRole>("John Doe");
+  const [selectedRole, setSelectedRole] = useState<CompanyRole>("agency");
   const [localTasks, setLocalTasks] = useState(tasks);
 
-  const filteredTasks = localTasks.filter(task => task.employee === selectedEmployee);
+  const filteredTasks = localTasks.filter(task => {
+    switch (selectedRole) {
+      case "agency":
+        return task.employee === "John Doe";
+      case "client":
+        return task.employee === "Jane Smith";
+      case "employee":
+        return task.employee === "Mike Johnson";
+      default:
+        return false;
+    }
+  });
+  
   const todoTasks = filteredTasks.filter(task => task.status === 'todo');
   const inProgressTasks = filteredTasks.filter(task => task.status === 'inProgress');
   const followUpTasks = filteredTasks.filter(task => task.status === 'followUp');
@@ -57,13 +69,13 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <Select value={selectedEmployee} onValueChange={(value: EmployeeRole) => setSelectedEmployee(value)}>
+        <Select value={selectedRole} onValueChange={(value: CompanyRole) => setSelectedRole(value)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select employee" />
+            <SelectValue placeholder="Select role" />
           </SelectTrigger>
           <SelectContent>
-            {EMPLOYEE_ROLES.map((role) => (
-              <SelectItem key={role} value={role}>
+            {COMPANY_ROLES.map((role) => (
+              <SelectItem key={role} value={role} className="capitalize">
                 {role}
               </SelectItem>
             ))}

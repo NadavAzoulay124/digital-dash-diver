@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,26 +25,33 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        // Monday.com inspired colors
         primary: {
-          DEFAULT: "#9b87f5",
-          hover: "#8b74f2",
-          light: "#d6bcfa",
-        },
-        ocean: {
-          DEFAULT: "#0EA5E9",
-          hover: "#0284c7",
+          DEFAULT: "#0073ea",
+          hover: "#0060c7",
+          light: "#cce5ff",
         },
         success: {
-          DEFAULT: "#22c55e",
-          hover: "#16a34a",
+          DEFAULT: "#00c875",
+          hover: "#00a35d",
         },
         warning: {
-          DEFAULT: "#f59e0b",
-          hover: "#d97706",
+          DEFAULT: "#fdab3d",
+          hover: "#fb8c00",
+        },
+        danger: {
+          DEFAULT: "#e2445c",
+          hover: "#c7314a",
         },
         dashboard: {
           card: "#ffffff",
-          background: "#f8fafc",
+          background: "#f6f7fb",
+          hover: "#f5f6f8",
+        },
+        sidebar: {
+          background: "#292f4c",
+          hover: "#363b5b",
+          active: "#1c1f3b",
         },
       },
       borderRadius: {

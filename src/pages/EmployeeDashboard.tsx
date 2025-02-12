@@ -1,3 +1,4 @@
+
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ClientContactDashboard } from "@/components/dashboard/ClientContactDashboard";
@@ -6,6 +7,7 @@ import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { ClientInsights } from "@/components/dashboard/ClientInsights";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ignoredTasks } from "@/data/mockTasks";
 
 const EmployeeDashboard = () => {
   return (
@@ -30,7 +32,7 @@ const EmployeeDashboard = () => {
               </TabsContent>
 
               <TabsContent value="tasks">
-                <TaskBoard />
+                <TaskBoard tasks={ignoredTasks} />
               </TabsContent>
 
               <TabsContent value="leads">

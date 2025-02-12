@@ -6,7 +6,7 @@ import { ContractCreation } from "@/components/dashboard/ContractCreation";
 import { InvoiceManagement } from "@/components/dashboard/InvoiceManagement";
 import { ClientOnboarding } from "@/components/dashboard/ClientOnboarding";
 import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
-import { ignoredTasks } from "@/data/mockTasks";
+import { ignoredTasks, Task } from "@/data/mockTasks";
 
 interface DashboardViewProps {
   currentView: string;

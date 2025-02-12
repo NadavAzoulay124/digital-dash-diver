@@ -9,6 +9,7 @@ import { Plus, GripVertical, X, Upload, Repeat } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Task } from "@/data/mockTasks";
 
 interface ChecklistItem {
   id: string;
@@ -52,7 +53,7 @@ const EMPLOYEE_ROLES = [
 type EmployeeRole = typeof EMPLOYEE_ROLES[number];
 
 interface TaskBoardProps {
-  tasks: any[];
+  tasks: Task[];
 }
 
 export const TaskBoard = ({ tasks }: TaskBoardProps) => {

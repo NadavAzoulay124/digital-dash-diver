@@ -1,4 +1,13 @@
-export const ignoredTasks = [
+
+export interface Task {
+  id: number;
+  employee: string;
+  task: string;
+  lastUpdated: string;
+  daysIgnored: number;
+}
+
+export const ignoredTasks: Task[] = [
   // John Doe's tasks
   {
     id: 1,
@@ -109,4 +118,4 @@ export const ignoredTasks = [
     lastUpdated: "2024-02-18",
     daysIgnored: 9,
   }
-] as const;
+];

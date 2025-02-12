@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,16 +76,16 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
     <div
       ref={provided.innerRef}
       {...provided.draggableProps}
-      className="bg-background p-3 rounded-lg shadow-sm space-y-2"
+      className="bg-background p-2 rounded-lg shadow-sm space-y-1.5"
     >
       <div className="flex items-center gap-2">
         <div {...provided.dragHandleProps} className="text-gray-400">
-          <GripVertical className="h-4 w-4" />
+          <GripVertical className="h-3 w-3" />
         </div>
-        <h3 className="font-medium">{task.task}</h3>
+        <h3 className="text-sm">{task.task}</h3>
       </div>
       {task.daysIgnored >= 7 && task.status !== 'done' && (
-        <div className="flex items-center gap-1.5 text-xs text-warning">
+        <div className="flex items-center gap-1.5 text-[11px] text-warning">
           <Clock className="h-3 w-3" />
           <span>Ignored for {task.daysIgnored} days</span>
         </div>
@@ -100,7 +101,8 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
             key={role}
             variant={selectedRole === role ? "default" : "outline"}
             onClick={() => setSelectedRole(role)}
-            className="whitespace-nowrap"
+            className="whitespace-nowrap text-sm"
+            size="sm"
           >
             {role}
           </Button>
@@ -108,17 +110,17 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-muted/50 border-l-4 border-warning">
-            <CardHeader>
-              <CardTitle className="text-lg text-warning">To Do</CardTitle>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium text-warning">To Do</CardTitle>
             </CardHeader>
             <Droppable droppableId="todo">
               {(provided) => (
                 <CardContent 
                   {...provided.droppableProps} 
                   ref={provided.innerRef}
-                  className="space-y-4"
+                  className="space-y-2 p-2"
                 >
                   {todoTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
@@ -132,15 +134,15 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
           </Card>
 
           <Card className="bg-muted/50 border-l-4 border-ocean">
-            <CardHeader>
-              <CardTitle className="text-lg text-ocean">In Progress</CardTitle>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium text-ocean">In Progress</CardTitle>
             </CardHeader>
             <Droppable droppableId="inProgress">
               {(provided) => (
                 <CardContent 
                   {...provided.droppableProps} 
                   ref={provided.innerRef}
-                  className="space-y-4"
+                  className="space-y-2 p-2"
                 >
                   {inProgressTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
@@ -154,15 +156,15 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
           </Card>
 
           <Card className="bg-muted/50 border-l-4 border-primary">
-            <CardHeader>
-              <CardTitle className="text-lg text-primary">Follow Up</CardTitle>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium text-primary">Follow Up</CardTitle>
             </CardHeader>
             <Droppable droppableId="followUp">
               {(provided) => (
                 <CardContent 
                   {...provided.droppableProps} 
                   ref={provided.innerRef}
-                  className="space-y-4"
+                  className="space-y-2 p-2"
                 >
                   {followUpTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
@@ -176,15 +178,15 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
           </Card>
 
           <Card className="bg-muted/50 border-l-4 border-success">
-            <CardHeader>
-              <CardTitle className="text-lg text-success">Done</CardTitle>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium text-success">Done</CardTitle>
             </CardHeader>
             <Droppable droppableId="done">
               {(provided) => (
                 <CardContent 
                   {...provided.droppableProps} 
                   ref={provided.innerRef}
-                  className="space-y-4"
+                  className="space-y-2 p-2"
                 >
                   {doneTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>

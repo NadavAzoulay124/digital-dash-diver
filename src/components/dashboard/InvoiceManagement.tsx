@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { DollarSign, Upload, CreditCard, Receipt } from "lucide-react";
+import { DollarSign, Upload, CreditCard, Receipt, TrendingUp } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface InvoiceItem {
   id: string;
@@ -33,6 +33,15 @@ const mockExpenses = [
   { id: 1, description: "Software Licenses", amount: 299, category: "Tools", date: "2024-03-10" },
   { id: 2, description: "Marketing Tools", amount: 150, category: "Marketing", date: "2024-03-08" },
   { id: 3, description: "Office Supplies", amount: 75, category: "Office", date: "2024-03-05" },
+];
+
+const mockFinancialData = [
+  { month: 'Jan', income: 4500, expenses: 3200 },
+  { month: 'Feb', income: 5200, expenses: 3800 },
+  { month: 'Mar', income: 6800, expenses: 4200 },
+  { month: 'Apr', income: 7500, expenses: 4500 },
+  { month: 'May', income: 8200, expenses: 5100 },
+  { month: 'Jun', income: 9000, expenses: 5800 },
 ];
 
 export const InvoiceManagement = () => {
@@ -98,8 +107,43 @@ export const InvoiceManagement = () => {
 
   return (
     <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            Financial Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={mockFinancialData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="income" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  name="Income"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="expenses" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  name="Expenses"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Payment History Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -132,7 +176,6 @@ export const InvoiceManagement = () => {
           </CardContent>
         </Card>
 
-        {/* Expenses Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -174,7 +217,6 @@ export const InvoiceManagement = () => {
         </Card>
       </div>
 
-      {/* Create Invoice Dialog */}
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline" className="gap-2">

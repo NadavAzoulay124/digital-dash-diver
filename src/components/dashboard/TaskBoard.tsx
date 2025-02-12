@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { Task } from "@/data/mockTasks";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Clock } from "lucide-react";
 
 const COMPANY_ROLES = [
   "Campaign Manager",
@@ -71,6 +71,27 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
     }
   };
 
+  const renderTask = (task: Task, provided: any) => (
+    <div
+      ref={provided.innerRef}
+      {...provided.draggableProps}
+      className="bg-background p-3 rounded-lg shadow-sm space-y-2"
+    >
+      <div className="flex items-center gap-2">
+        <div {...provided.dragHandleProps} className="text-gray-400">
+          <GripVertical className="h-4 w-4" />
+        </div>
+        <h3 className="font-medium">{task.task}</h3>
+      </div>
+      {task.daysIgnored >= 7 && task.status !== 'done' && (
+        <div className="flex items-center gap-1.5 text-xs text-warning">
+          <Clock className="h-3 w-3" />
+          <span>Ignored for {task.daysIgnored} days</span>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="p-6">
       <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
@@ -101,18 +122,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
                 >
                   {todoTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className="bg-background p-3 rounded-lg shadow-sm flex items-center gap-2"
-                        >
-                          <div {...provided.dragHandleProps} className="text-gray-400">
-                            <GripVertical className="h-4 w-4" />
-                          </div>
-                          <h3 className="font-medium">{task.task}</h3>
-                        </div>
-                      )}
+                      {(provided) => renderTask(task, provided)}
                     </Draggable>
                   ))}
                   {provided.placeholder}
@@ -134,18 +144,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
                 >
                   {inProgressTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className="bg-background p-3 rounded-lg shadow-sm flex items-center gap-2"
-                        >
-                          <div {...provided.dragHandleProps} className="text-gray-400">
-                            <GripVertical className="h-4 w-4" />
-                          </div>
-                          <h3 className="font-medium">{task.task}</h3>
-                        </div>
-                      )}
+                      {(provided) => renderTask(task, provided)}
                     </Draggable>
                   ))}
                   {provided.placeholder}
@@ -167,18 +166,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
                 >
                   {followUpTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className="bg-background p-3 rounded-lg shadow-sm flex items-center gap-2"
-                        >
-                          <div {...provided.dragHandleProps} className="text-gray-400">
-                            <GripVertical className="h-4 w-4" />
-                          </div>
-                          <h3 className="font-medium">{task.task}</h3>
-                        </div>
-                      )}
+                      {(provided) => renderTask(task, provided)}
                     </Draggable>
                   ))}
                   {provided.placeholder}
@@ -200,18 +188,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
                 >
                   {doneTasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className="bg-background p-3 rounded-lg shadow-sm flex items-center gap-2"
-                        >
-                          <div {...provided.dragHandleProps} className="text-gray-400">
-                            <GripVertical className="h-4 w-4" />
-                          </div>
-                          <h3 className="font-medium">{task.task}</h3>
-                        </div>
-                      )}
+                      {(provided) => renderTask(task, provided)}
                     </Draggable>
                   ))}
                   {provided.placeholder}

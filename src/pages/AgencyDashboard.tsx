@@ -1,4 +1,3 @@
-
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
@@ -16,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 
-// Mock data for ignored tasks
+// Mock data for tasks
 const ignoredTasks = [
   // John Doe's tasks
   {
@@ -132,63 +131,11 @@ const ignoredTasks = [
 
 const AgencyDashboard = () => {
   const [currentView, setCurrentView] = useState('tasks');
-  const [showIgnoredTasks, setShowIgnoredTasks] = useState(true); // Changed to true by default
-
-  useEffect(() => {
-    // Check for ignored tasks and show notification
-    const significantlyIgnoredTasks = ignoredTasks.filter(task => task.daysIgnored > 7); // Changed to 7 days
-    
-    if (significantlyIgnoredTasks.length > 0) {
-      toast.warning(`${significantlyIgnoredTasks.length} tasks have been ignored for over a week`, {
-        action: {
-          label: "View Tasks",
-          onClick: () => setShowIgnoredTasks(true),
-        },
-      });
-    }
-  }, []);
 
   const renderContent = () => {
     switch (currentView) {
       case 'tasks':
-        return (
-          <>
-            {showIgnoredTasks && (
-              <div className="mb-8">
-                <Alert variant="warning" className="bg-warning/10 border-warning">
-                  <AlertTriangle className="h-4 w-4 text-warning" />
-                  <AlertTitle>Ignored Tasks Requiring Attention</AlertTitle>
-                  <AlertDescription>
-                    <div className="mt-2 space-y-2">
-                      {ignoredTasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className="bg-white p-4 rounded-lg border border-warning/20"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium text-sm">{task.task}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Assigned to: {task.employee}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Last updated: {task.lastUpdated}
-                              </p>
-                            </div>
-                            <span className="text-warning text-sm font-medium">
-                              {task.daysIgnored} days without updates
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-            <TaskBoard />
-          </>
-        );
+        return <TaskBoard tasks={ignoredTasks} />;
       case 'leads':
         return <LeadManagement />;
       case 'contracts':
@@ -227,7 +174,7 @@ const AgencyDashboard = () => {
           </div>
         );
       default:
-        return <TaskBoard />;
+        return <TaskBoard tasks={ignoredTasks} />;
     }
   };
 

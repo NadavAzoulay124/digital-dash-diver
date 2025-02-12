@@ -43,14 +43,14 @@ const ignoredTasks = [
 
 const AgencyDashboard = () => {
   const [currentView, setCurrentView] = useState('tasks');
-  const [showIgnoredTasks, setShowIgnoredTasks] = useState(false);
+  const [showIgnoredTasks, setShowIgnoredTasks] = useState(true); // Changed to true by default
 
   useEffect(() => {
     // Check for ignored tasks and show notification
-    const significantlyIgnoredTasks = ignoredTasks.filter(task => task.daysIgnored > 14);
+    const significantlyIgnoredTasks = ignoredTasks.filter(task => task.daysIgnored > 7); // Changed to 7 days
     
     if (significantlyIgnoredTasks.length > 0) {
-      toast.warning(`${significantlyIgnoredTasks.length} tasks have been ignored for over 2 weeks`, {
+      toast.warning(`${significantlyIgnoredTasks.length} tasks have been ignored for over a week`, {
         action: {
           label: "View Tasks",
           onClick: () => setShowIgnoredTasks(true),
@@ -81,6 +81,9 @@ const AgencyDashboard = () => {
                               <h4 className="font-medium text-sm">{task.task}</h4>
                               <p className="text-sm text-muted-foreground">
                                 Assigned to: {task.employee}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Last updated: {task.lastUpdated}
                               </p>
                             </div>
                             <span className="text-warning text-sm font-medium">

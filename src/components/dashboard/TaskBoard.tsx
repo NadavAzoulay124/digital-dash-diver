@@ -7,9 +7,11 @@ import { Task } from "@/data/mockTasks";
 import { GripVertical } from "lucide-react";
 
 const COMPANY_ROLES = [
-  "agency",
-  "client",
-  "employee"
+  "Campaign Manager",
+  "Designer",
+  "Customer Manager",
+  "Social Media Manager",
+  "Content Strategist"
 ] as const;
 
 type CompanyRole = typeof COMPANY_ROLES[number];
@@ -19,17 +21,21 @@ interface TaskBoardProps {
 }
 
 export const TaskBoard = ({ tasks }: TaskBoardProps) => {
-  const [selectedRole, setSelectedRole] = useState<CompanyRole>("agency");
+  const [selectedRole, setSelectedRole] = useState<CompanyRole>("Campaign Manager");
   const [localTasks, setLocalTasks] = useState(tasks);
 
   const filteredTasks = localTasks.filter(task => {
     switch (selectedRole) {
-      case "agency":
+      case "Campaign Manager":
         return task.employee === "John Doe";
-      case "client":
+      case "Designer":
         return task.employee === "Jane Smith";
-      case "employee":
+      case "Customer Manager":
         return task.employee === "Mike Johnson";
+      case "Social Media Manager":
+        return task.employee === "Jane Smith";
+      case "Content Strategist":
+        return task.employee === "John Doe";
       default:
         return false;
     }
@@ -75,7 +81,7 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
           </SelectTrigger>
           <SelectContent>
             {COMPANY_ROLES.map((role) => (
-              <SelectItem key={role} value={role} className="capitalize">
+              <SelectItem key={role} value={role}>
                 {role}
               </SelectItem>
             ))}

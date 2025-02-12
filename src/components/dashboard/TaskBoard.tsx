@@ -1,11 +1,12 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { Task } from "@/data/mockTasks";
-import { GripVertical, Clock } from "lucide-react";
+import { GripVertical, Clock, Upload, X } from "lucide-react";
 
 const COMPANY_ROLES = [
   {
@@ -44,6 +45,8 @@ interface TaskBoardProps {
 export const TaskBoard = ({ tasks }: TaskBoardProps) => {
   const [selectedRole, setSelectedRole] = useState<CompanyRole>("Campaign Manager");
   const [localTasks, setLocalTasks] = useState(tasks);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const filteredTasks = localTasks.filter(task => {
     switch (selectedRole) {
@@ -97,7 +100,11 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
     <div
       ref={provided.innerRef}
       {...provided.draggableProps}
-      className="bg-background p-2 rounded-lg shadow-sm space-y-1.5"
+      className="bg-background p-2 rounded-lg shadow-sm space-y-1.5 cursor-pointer"
+      onClick={() => {
+        setSelectedTask(task);
+        setIsDialogOpen(true);
+      }}
     >
       <div className="flex items-center gap-2">
         <div {...provided.dragHandleProps} className="text-gray-400">
@@ -225,6 +232,65 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
           </Card>
         </div>
       </DragDropContext>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex justify-between items-center">
+              Follow up with clients
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0"
+                onClick={() => setIsDialogOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-sm font-medium mb-3">Task Repetition</h4>
+              <Input 
+                value="No repeat"
+                readOnly
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-3">Comments</h4>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Add a comment..."
+                  className="flex-1"
+                />
+                <Button>Add</Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-3">Checklist</h4>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Add checklist item..."
+                  className="flex-1"
+                />
+                <Button>Add</Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-3">Attachments</h4>
+              <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                <Upload className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm text-gray-600">Click to upload file or photo</p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

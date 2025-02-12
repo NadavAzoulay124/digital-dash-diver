@@ -122,10 +122,10 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
             key={role}
             variant={selectedRole === role ? "default" : "outline"}
             onClick={() => setSelectedRole(role)}
-            className="whitespace-nowrap text-sm flex items-center gap-2"
+            className="whitespace-nowrap text-sm flex items-center gap-2 h-auto py-1.5"
             size="sm"
           >
-            <Avatar className="h-6 w-6">
+            <Avatar className="h-8 w-8">
               <AvatarImage src={image} alt={employee} />
               <AvatarFallback>{employee.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>

@@ -2,19 +2,40 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { Task } from "@/data/mockTasks";
 import { GripVertical, Clock } from "lucide-react";
 
 const COMPANY_ROLES = [
-  "Campaign Manager",
-  "Designer",
-  "Customer Manager",
-  "Social Media Manager",
-  "Content Strategist"
+  {
+    role: "Campaign Manager",
+    employee: "John Doe",
+    image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952"
+  },
+  {
+    role: "Designer",
+    employee: "Jane Smith",
+    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+  },
+  {
+    role: "Customer Manager",
+    employee: "Mike Johnson",
+    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
+  },
+  {
+    role: "Social Media Manager",
+    employee: "Jane Smith",
+    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+  },
+  {
+    role: "Content Strategist",
+    employee: "John Doe",
+    image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952"
+  }
 ] as const;
 
-type CompanyRole = typeof COMPANY_ROLES[number];
+type CompanyRole = typeof COMPANY_ROLES[number]["role"];
 
 interface TaskBoardProps {
   tasks: Task[];
@@ -96,15 +117,19 @@ export const TaskBoard = ({ tasks }: TaskBoardProps) => {
   return (
     <div className="p-6">
       <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-        {COMPANY_ROLES.map((role) => (
+        {COMPANY_ROLES.map(({ role, employee, image }) => (
           <Button
             key={role}
             variant={selectedRole === role ? "default" : "outline"}
             onClick={() => setSelectedRole(role)}
-            className="whitespace-nowrap text-sm"
+            className="whitespace-nowrap text-sm flex items-center gap-2"
             size="sm"
           >
-            {role}
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={image} alt={employee} />
+              <AvatarFallback>{employee.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            </Avatar>
+            <span>{role}</span>
           </Button>
         ))}
       </div>

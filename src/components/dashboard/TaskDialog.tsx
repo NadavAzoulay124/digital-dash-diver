@@ -16,8 +16,8 @@ interface TaskDialogProps {
 export const TaskDialog = ({ isOpen, onOpenChange, task }: TaskDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] max-h-[85vh]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex justify-between items-center">
             Follow up with clients
             <Button 
@@ -31,7 +31,7 @@ export const TaskDialog = ({ isOpen, onOpenChange, task }: TaskDialogProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="h-full max-h-[60vh] pr-4">
+        <ScrollArea className="flex-grow pr-4 h-[calc(85vh-8rem)]">
           <div className="space-y-6">
             <div>
               <h4 className="text-sm font-medium mb-3">Task Repetition</h4>

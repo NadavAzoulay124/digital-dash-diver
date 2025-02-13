@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -263,6 +264,7 @@ export const ContractCreation = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const signaturePadRef = useRef<SignaturePad>(null);
+  const [manualSignature, setManualSignature] = useState(false);
   const [services, setServices] = useState<Service[]>([
     { id: "seo", name: "SEO Services", price: "", selected: false },
     { id: "meta", name: "PPC for Meta", price: "", selected: false },
@@ -336,17 +338,18 @@ export const ContractCreation = () => {
       return;
     }
 
-    if (!signaturePadRef.current?.isEmpty()) {
+    if (!manualSignature && !signaturePadRef.current?.isEmpty()) {
       const signatureData = signaturePadRef.current?.getTrimmedCanvas().toDataURL();
       console.log('Signature data:', signatureData);
     }
 
-    toast.success(`Contract created for ${clientCompany}`);
+    toast.success(`Contract ${manualSignature ? 'sent for manual signature' : 'created'} for ${clientCompany}`);
     console.log({
       clientCompany,
       services: selectedServices,
       totalValue: selectedServices.reduce((sum, service) => sum + Number(service.price), 0),
       companyLogo,
+      manualSignature,
     });
   };
 
@@ -398,13 +401,15 @@ export const ContractCreation = () => {
             <SignaturePadComponent
               onClear={clearSignature}
               signaturePadRef={signaturePadRef}
+              manualSignature={manualSignature}
+              onManualSignatureChange={setManualSignature}
             />
 
             <Button 
               onClick={handleSendContract} 
               className="w-full bg-primary hover:bg-primary-hover text-white font-semibold"
             >
-              Generate & Send Contract
+              {manualSignature ? 'Send for Manual Signature' : 'Generate & Send Contract'}
             </Button>
           </div>
 

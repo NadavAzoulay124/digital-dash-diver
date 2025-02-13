@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Task } from "@/data/mockTasks";
 
 interface TaskDialogProps {
@@ -32,11 +33,18 @@ export const TaskDialog = ({ isOpen, onOpenChange, task }: TaskDialogProps) => {
         <div className="space-y-6">
           <div>
             <h4 className="text-sm font-medium mb-3">Task Repetition</h4>
-            <Input 
-              value="No repeat"
-              readOnly
-              className="w-full"
-            />
+            <Select defaultValue="no-repeat">
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select repetition" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="no-repeat">No repeat</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="custom">Custom dates</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

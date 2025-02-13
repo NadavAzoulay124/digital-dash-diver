@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Task } from "@/data/mockTasks";
 
@@ -15,7 +16,7 @@ interface TaskDialogProps {
 export const TaskDialog = ({ isOpen, onOpenChange, task }: TaskDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh]">
         <DialogHeader>
           <DialogTitle className="flex justify-between items-center">
             Follow up with clients
@@ -30,53 +31,55 @@ export const TaskDialog = ({ isOpen, onOpenChange, task }: TaskDialogProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
-          <div>
-            <h4 className="text-sm font-medium mb-3">Task Repetition</h4>
-            <Select defaultValue="no-repeat">
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select repetition" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="no-repeat">No repeat</SelectItem>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="custom">Custom dates</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <ScrollArea className="h-full max-h-[60vh] pr-4">
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-sm font-medium mb-3">Task Repetition</h4>
+              <Select defaultValue="no-repeat">
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select repetition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no-repeat">No repeat</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="custom">Custom dates</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <h4 className="text-sm font-medium mb-3">Comments</h4>
-            <div className="flex gap-2">
-              <Input 
-                placeholder="Add a comment..."
-                className="flex-1"
-              />
-              <Button>Add</Button>
+            <div>
+              <h4 className="text-sm font-medium mb-3">Comments</h4>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Add a comment..."
+                  className="flex-1"
+                />
+                <Button>Add</Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-3">Checklist</h4>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Add checklist item..."
+                  className="flex-1"
+                />
+                <Button>Add</Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-3">Attachments</h4>
+              <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                <Upload className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm text-gray-600">Click to upload file or photo</p>
+              </div>
             </div>
           </div>
-
-          <div>
-            <h4 className="text-sm font-medium mb-3">Checklist</h4>
-            <div className="flex gap-2">
-              <Input 
-                placeholder="Add checklist item..."
-                className="flex-1"
-              />
-              <Button>Add</Button>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-medium mb-3">Attachments</h4>
-            <div className="border-2 border-dashed rounded-lg p-4 text-center">
-              <Upload className="h-6 w-6 mx-auto mb-2 text-gray-400" />
-              <p className="text-sm text-gray-600">Click to upload file or photo</p>
-            </div>
-          </div>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

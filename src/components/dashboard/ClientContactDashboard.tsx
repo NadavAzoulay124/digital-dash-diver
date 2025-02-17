@@ -72,11 +72,18 @@ const mockMeetings: Meeting[] = [
   }
 ];
 
+// Helper function to get a date that's X days ago
+const getDateDaysAgo = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().split('T')[0];
+};
+
 const mockClients: Client[] = [
   {
     id: "1",
     name: "Acme Corp",
-    lastContact: "2024-03-20",
+    lastContact: getDateDaysAgo(6), // Exactly 6 days ago
     openTasks: 5,
     alertThreshold: 3,
     goals: [
@@ -97,7 +104,7 @@ const mockClients: Client[] = [
   {
     id: "2",
     name: "TechStart Inc",
-    lastContact: "2024-03-21",
+    lastContact: getDateDaysAgo(6), // Also 6 days ago
     openTasks: 3,
     alertThreshold: 7,
     goals: [

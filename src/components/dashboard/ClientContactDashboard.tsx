@@ -76,7 +76,7 @@ const mockClients: Client[] = [
   {
     id: "1",
     name: "Acme Corp",
-    lastContact: "2024-03-15",
+    lastContact: "2024-03-20",
     openTasks: 5,
     alertThreshold: 3,
     goals: [
@@ -97,7 +97,7 @@ const mockClients: Client[] = [
   {
     id: "2",
     name: "TechStart Inc",
-    lastContact: "2024-03-14",
+    lastContact: "2024-03-21",
     openTasks: 3,
     alertThreshold: 7,
     goals: [

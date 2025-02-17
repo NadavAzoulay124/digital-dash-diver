@@ -44,6 +44,23 @@ interface SocialPost {
   performanceScore: number;
 }
 
+interface LeadComment {
+  leadId: string;
+  clientId: string;
+  comment: string;
+  date: string;
+  category?: "distance" | "scheduling" | "pricing" | "other";
+  resolved?: boolean;
+}
+
+interface Lead {
+  id: string;
+  name: string;
+  location: string;
+  status: string;
+  comments: LeadComment[];
+}
+
 const platformMetrics: PlatformMetric[] = [
   {
     platform: "Instagram",
@@ -149,6 +166,41 @@ const recentPosts: SocialPost[] = [
   }
 ];
 
+const leadComments: LeadComment[] = [
+  {
+    leadId: "lead1",
+    clientId: "ig_12345",
+    comment: "Lead is too far, over 50 miles away",
+    date: "2024-02-25",
+    category: "distance",
+    resolved: false
+  },
+  {
+    leadId: "lead2",
+    clientId: "ig_12345",
+    comment: "Couldn't coordinate meeting time, busy schedule",
+    date: "2024-02-26",
+    category: "scheduling",
+    resolved: false
+  },
+  {
+    leadId: "lead3",
+    clientId: "fb_67890",
+    comment: "Another lead too far from our service area",
+    date: "2024-02-27",
+    category: "distance",
+    resolved: false
+  },
+  {
+    leadId: "lead4",
+    clientId: "fb_67890",
+    comment: "Third missed call attempt, no response",
+    date: "2024-02-28",
+    category: "scheduling",
+    resolved: false
+  }
+];
+
 export const AIAssistant = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
@@ -207,6 +259,51 @@ export const AIAssistant = () => {
         );
       }
     });
+
+    const analyzeLeadComments = () => {
+      const commentsByCategory = leadComments.reduce((acc, comment) => {
+        if (selectedClient === "all" || comment.clientId === selectedClient) {
+          acc[comment.category || "other"] = (acc[comment.category || "other"] || 0) + 1;
+        }
+        return acc;
+      }, {} as Record<string, number>);
+
+      if (commentsByCategory["distance"] >= 2) {
+        insights.push(
+          `⚠️ Multiple leads have reported distance issues (${commentsByCategory["distance"]} comments). Consider adjusting your targeting radius or discussing service area expansion with the client.`
+        );
+      }
+
+      if (commentsByCategory["scheduling"] >= 2) {
+        insights.push(
+          `⚠️ There are ${commentsByCategory["scheduling"]} comments about scheduling difficulties. Recommend reviewing the call coordination process and possibly implementing an automated scheduling system.`
+        );
+      }
+
+      const recentComments = leadComments.filter(comment => {
+        const commentDate = new Date(comment.date);
+        const today = new Date();
+        const daysDiff = Math.floor((today.getTime() - commentDate.getTime()) / (1000 * 60 * 60 * 24));
+        return daysDiff <= 7 && (selectedClient === "all" || comment.clientId === selectedClient);
+      });
+
+      if (recentComments.length > 0) {
+        const urgentCategories = recentComments.reduce((acc, comment) => {
+          acc[comment.category || "other"] = (acc[comment.category || "other"] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+
+        Object.entries(urgentCategories).forEach(([category, count]) => {
+          if (count >= 2) {
+            insights.push(
+              `🚨 Urgent: ${count} ${category} issues reported in the last 7 days. Immediate attention required.`
+            );
+          }
+        });
+      }
+    };
+
+    analyzeLeadComments();
 
     return insights;
   };

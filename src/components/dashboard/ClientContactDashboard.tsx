@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Calendar, CheckSquare, Target, TrendingUp } from "lucide-react";
+import { Search, Calendar, CheckSquare, Target, TrendingUp, Clock } from "lucide-react";
 import { ConversationSummary } from "./ConversationSummary";
 import { ClientInsights } from "./ClientInsights";
 
@@ -13,6 +13,16 @@ interface ClientGoal {
   target: string;
 }
 
+interface Meeting {
+  id: string;
+  clientName: string;
+  date: string;
+  time: string;
+  summary: string;
+  status: 'completed' | 'upcoming';
+  nextSteps?: string[];
+}
+
 interface Client {
   id: string;
   name: string;
@@ -20,6 +30,43 @@ interface Client {
   openTasks: number;
   goals: ClientGoal[];
 }
+
+const mockMeetings: Meeting[] = [
+  {
+    id: "m1",
+    clientName: "Acme Corp",
+    date: "2024-02-28",
+    time: "10:00 AM",
+    summary: "Discussed Q1 campaign performance and strategy adjustments. Client expressed satisfaction with current social media engagement but wants to focus more on conversion optimization.",
+    status: 'completed',
+    nextSteps: [
+      "Prepare conversion rate optimization proposal",
+      "Schedule A/B testing for landing pages",
+      "Review analytics for underperforming channels"
+    ]
+  },
+  {
+    id: "m2",
+    clientName: "TechStart Inc",
+    date: "2024-02-29",
+    time: "2:30 PM",
+    summary: "Product launch campaign planning session. Defined key messaging points and target audience segments. Client emphasized importance of reaching technical decision-makers.",
+    status: 'completed',
+    nextSteps: [
+      "Draft technical content calendar",
+      "Research industry publications for PR outreach",
+      "Develop LinkedIn advertising strategy"
+    ]
+  },
+  {
+    id: "m3",
+    clientName: "Acme Corp",
+    date: "2024-03-05",
+    time: "11:00 AM",
+    summary: "Upcoming: CRO Strategy Presentation",
+    status: 'upcoming'
+  }
+];
 
 const mockClients: Client[] = [
   {
@@ -147,6 +194,56 @@ export const ClientContactDashboard = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Meeting History */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  Meeting History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {mockMeetings
+                    .filter(meeting => meeting.clientName === selectedClientData.name)
+                    .map((meeting) => (
+                      <div 
+                        key={meeting.id} 
+                        className={`p-4 rounded-lg border ${
+                          meeting.status === 'upcoming' 
+                            ? 'border-primary/20 bg-primary/5' 
+                            : 'border-border'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-medium">{meeting.date} at {meeting.time}</p>
+                            <p className={`text-sm ${
+                              meeting.status === 'upcoming' 
+                                ? 'text-primary' 
+                                : 'text-muted-foreground'
+                            }`}>
+                              {meeting.status === 'upcoming' ? 'Upcoming' : 'Completed'}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">{meeting.summary}</p>
+                        {meeting.nextSteps && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Next Steps:</p>
+                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                              {meeting.nextSteps.map((step, index) => (
+                                <li key={index}>{step}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </CardContent>
             </Card>

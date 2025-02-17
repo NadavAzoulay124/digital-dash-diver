@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,6 @@ interface SocialPost {
   performanceScore: number;
 }
 
-// Enhanced mock data with more detailed metrics
 const platformMetrics: PlatformMetric[] = [
   {
     platform: "Instagram",
@@ -152,7 +150,6 @@ export const AIAssistant = () => {
   const generateInsights = () => {
     const insights: string[] = [];
 
-    // Check platform performance trends
     platformMetrics.forEach((metric) => {
       if (metric.changePercentage >= 20) {
         insights.push(
@@ -165,7 +162,6 @@ export const AIAssistant = () => {
       }
     });
 
-    // Analyze keyword performance
     keywordPerformance.forEach((keyword) => {
       const today = new Date();
       const lastConversion = new Date(keyword.lastConversionDate);
@@ -184,7 +180,6 @@ export const AIAssistant = () => {
       }
     });
 
-    // Analyze social post performance
     recentPosts.forEach((post) => {
       const engagementRate = (post.engagement / post.reach) * 100;
       if (engagementRate > 10) {
@@ -208,7 +203,6 @@ export const AIAssistant = () => {
       aiResponse += `${insight}\n\n`;
     });
 
-    // Add query-specific response
     if (query.toLowerCase().includes("performance")) {
       aiResponse += `\nRegarding your performance query: The best performing platform currently is ${
         platformMetrics.reduce((a, b) => a.changePercentage > b.changePercentage ? a : b).platform
@@ -230,54 +224,68 @@ export const AIAssistant = () => {
     });
   };
 
+  const initialInsights = generateInsights();
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart className="h-5 w-5" />
-          AI Campaign Assistant
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Textarea
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask about campaign performance, social media metrics, or get recommendations..."
-              rows={4}
-            />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
+            Important Client Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            {initialInsights.map((insight, index) => (
+              <Alert key={index} variant={
+                insight.includes("⚠️") ? "destructive" : 
+                insight.includes("📉") ? "destructive" :
+                "default"
+              }>
+                {insight.includes("⚠️") || insight.includes("📉") ? (
+                  <AlertTriangle className="h-4 w-4" />
+                ) : insight.includes("💰") ? (
+                  <DollarSign className="h-4 w-4" />
+                ) : insight.includes("🌟") ? (
+                  <Target className="h-4 w-4" />
+                ) : (
+                  <TrendingUp className="h-4 w-4" />
+                )}
+                <AlertDescription>{insight}</AlertDescription>
+              </Alert>
+            ))}
           </div>
-          <Button type="submit" className="w-full">Get AI Insights</Button>
-          
-          {response && (
-            <div className="mt-4 space-y-4">
-              {generateInsights().map((insight, index) => (
-                <Alert key={index} variant={
-                  insight.includes("⚠️") ? "destructive" : 
-                  insight.includes("📉") ? "destructive" :
-                  "default"
-                }>
-                  {insight.includes("⚠️") || insight.includes("📉") ? (
-                    <AlertTriangle className="h-4 w-4" />
-                  ) : insight.includes("💰") ? (
-                    <DollarSign className="h-4 w-4" />
-                  ) : insight.includes("🌟") ? (
-                    <Target className="h-4 w-4" />
-                  ) : (
-                    <TrendingUp className="h-4 w-4" />
-                  )}
-                  <AlertDescription>{insight}</AlertDescription>
-                </Alert>
-              ))}
-              
-              <div className="p-4 bg-muted rounded-lg">
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart className="h-5 w-5" />
+            Ask AI Assistant
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Textarea
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Ask specific questions about campaign performance, social media metrics, or get recommendations..."
+                rows={4}
+              />
+            </div>
+            <Button type="submit" className="w-full">Get AI Insights</Button>
+            
+            {response && (
+              <div className="mt-4 p-4 bg-muted rounded-lg">
                 <p className="text-sm whitespace-pre-line">{response}</p>
               </div>
-            </div>
-          )}
-        </form>
-      </CardContent>
-    </Card>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

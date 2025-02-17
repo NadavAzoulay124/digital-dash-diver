@@ -28,11 +28,11 @@ const menuItems = {
     { icon: Settings, label: "Settings", path: "/client/settings" },
   ],
   employee: [
-    { icon: Home, label: "Overview", path: "/employee" },
-    { icon: ListChecks, label: "Tasks", path: "/employee/tasks" },
-    { icon: Calendar, label: "Schedule", path: "/employee/schedule" },
-    { icon: Mail, label: "Messages", path: "/employee/messages" },
-    { icon: Settings, label: "Settings", path: "/employee/settings" },
+    { icon: Home, label: "Client Contact Management", path: "/employee" },
+    { icon: ListChecks, label: "Task Management", path: "/employee/tasks" },
+    { icon: Calendar, label: "Lead Schedule", path: "/employee/schedule" },
+    { icon: Mail, label: "AI Chat Assistant", path: "/employee/messages" },
+    { icon: Settings, label: "Client Analytics & Settings", path: "/employee/settings" },
   ],
 };
 

@@ -1,37 +1,12 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Phone, Megaphone, MessageSquare } from "lucide-react";
+import { Calendar, Users, Phone, Megaphone } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-interface Lead {
-  id: string;
-  name: string;
-  date: string;
-  phone: string;
-  source: "Google Ads" | "Meta" | "Organic" | "Other";
-  campaign: string;
-  adSet: string;
-  ad: string;
-  status: "New" | "Appointment Scheduled" | "Closed" | "Not Interested";
-  comments: LeadComment[];
-}
-
-interface LeadComment {
-  id: string;
-  comment: string;
-  category: "distance" | "scheduling" | "pricing" | "other";
-  date: string;
-}
+import { LeadStatusBadge } from "./leads/LeadStatusBadge";
+import { LeadComments } from "./leads/LeadComments";
+import { Lead, LeadComment } from "./leads/types";
 
 const mockLeads: Lead[] = [
   {
@@ -156,25 +131,8 @@ const mockLeads: Lead[] = [
   },
 ];
 
-const getStatusBadge = (status: Lead["status"]) => {
-  switch (status) {
-    case "New":
-      return <Badge className="bg-primary">{status}</Badge>;
-    case "Appointment Scheduled":
-      return <Badge className="bg-warning">{status}</Badge>;
-    case "Closed":
-      return <Badge className="bg-success">{status}</Badge>;
-    case "Not Interested":
-      return <Badge variant="destructive">{status}</Badge>;
-    default:
-      return <Badge>{status}</Badge>;
-  }
-};
-
 export const LeadsBoard = () => {
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
-  const [newComment, setNewComment] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<"distance" | "scheduling" | "pricing" | "other">("other");
   const { toast } = useToast();
 
   const handleStatusChange = (leadId: string, newStatus: Lead["status"]) => {
@@ -187,13 +145,11 @@ export const LeadsBoard = () => {
     });
   };
 
-  const handleAddComment = (leadId: string) => {
-    if (!newComment.trim()) return;
-
+  const handleAddComment = (leadId: string, comment: string, category: LeadComment["category"]) => {
     const newCommentObj: LeadComment = {
       id: Date.now().toString(),
-      comment: newComment,
-      category: selectedCategory,
+      comment,
+      category,
       date: new Date().toISOString(),
     };
 
@@ -207,9 +163,6 @@ export const LeadsBoard = () => {
       title: "Comment Added",
       description: "Your comment has been saved successfully.",
     });
-
-    setNewComment("");
-    setSelectedCategory("other");
   };
 
   return (
@@ -258,7 +211,9 @@ export const LeadsBoard = () => {
                       onValueChange={(value: Lead["status"]) => handleStatusChange(lead.id, value)}
                     >
                       <SelectTrigger className="w-[180px]">
-                        <SelectValue>{getStatusBadge(lead.status)}</SelectValue>
+                        <SelectValue>
+                          <LeadStatusBadge status={lead.status} />
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="New">New</SelectItem>
@@ -278,69 +233,10 @@ export const LeadsBoard = () => {
                   <TableCell>{lead.adSet}</TableCell>
                   <TableCell>{lead.ad}</TableCell>
                   <TableCell>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex items-center gap-2">
-                          <MessageSquare className="h-4 w-4" />
-                          {lead.comments.length > 0 ? `${lead.comments.length} Comments` : "Add Comment"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80">
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Textarea
-                              value={newComment}
-                              onChange={(e) => setNewComment(e.target.value)}
-                              placeholder="Enter your comment..."
-                              className="min-h-[100px]"
-                            />
-                            <Select
-                              value={selectedCategory}
-                              onValueChange={(value: "distance" | "scheduling" | "pricing" | "other") => 
-                                setSelectedCategory(value)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select category" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="distance">Distance Issue</SelectItem>
-                                <SelectItem value="scheduling">Scheduling Problem</SelectItem>
-                                <SelectItem value="pricing">Pricing Concern</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Button 
-                              onClick={() => handleAddComment(lead.id)}
-                              className="w-full"
-                            >
-                              Add Comment
-                            </Button>
-                          </div>
-                          {lead.comments.length > 0 && (
-                            <div className="space-y-2">
-                              <h4 className="font-medium">Previous Comments</h4>
-                              <div className="space-y-2">
-                                {lead.comments.map((comment) => (
-                                  <div
-                                    key={comment.id}
-                                    className="text-sm p-2 bg-muted rounded-md"
-                                  >
-                                    <div className="flex justify-between items-start mb-1">
-                                      <Badge>{comment.category}</Badge>
-                                      <span className="text-xs text-muted-foreground">
-                                        {new Date(comment.date).toLocaleDateString()}
-                                      </span>
-                                    </div>
-                                    <p>{comment.comment}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    <LeadComments 
+                      lead={lead}
+                      onAddComment={handleAddComment}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

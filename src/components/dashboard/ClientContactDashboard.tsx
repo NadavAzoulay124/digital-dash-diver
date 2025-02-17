@@ -180,12 +180,12 @@ export const ClientContactDashboard = () => {
                     <span className="flex items-center gap-2">
                       {client.name}
                       {shouldShowAlert(client) && (
-                        <AlertTriangle className="h-4 w-4 text-warning" />
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
                       )}
                     </span>
                   </Button>
                   {shouldShowAlert(client) && (
-                    <Alert variant="warning" className="mt-2">
+                    <Alert variant="destructive" className="mt-2">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription>
                         No contact for {getDaysSinceLastContact(client.lastContact)} days

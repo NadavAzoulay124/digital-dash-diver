@@ -1,5 +1,5 @@
 
-import { Home, BarChart2, Users, Mail, Settings, ListChecks, Calendar, FileText, Target, Briefcase } from "lucide-react";
+import { Home, BarChart2, Users, Mail, Settings, ListChecks, Calendar, FileText, Target, Briefcase, TestTube } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -32,6 +32,7 @@ const menuItems = {
     { icon: ListChecks, label: "Task Management", path: "/employee/tasks" },
     { icon: Calendar, label: "Lead Schedule", path: "/employee/schedule" },
     { icon: Mail, label: "AI Chat Assistant", path: "/employee/messages" },
+    { icon: TestTube, label: "A/B Testing", path: "/employee/ab-testing" },
     { icon: Settings, label: "Client Analytics & Settings", path: "/employee/settings" },
   ],
 };

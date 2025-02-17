@@ -6,6 +6,7 @@ import { ClientContactDashboard } from "@/components/dashboard/ClientContactDash
 import { AIAssistant } from "@/components/dashboard/AIAssistant";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { ClientInsights } from "@/components/dashboard/ClientInsights";
+import { ABTestingDashboard } from "@/components/dashboard/ABTestingDashboard";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ignoredTasks } from "@/data/mockTasks";
 
@@ -45,6 +46,12 @@ const EmployeeDashboard = () => {
                 <>
                   <h1 className="text-2xl font-bold mb-8">Client Analytics & Settings</h1>
                   <ClientInsights />
+                </>
+              } />
+              <Route path="/ab-testing" element={
+                <>
+                  <h1 className="text-2xl font-bold mb-8">A/B Testing Dashboard</h1>
+                  <ABTestingDashboard />
                 </>
               } />
             </Routes>

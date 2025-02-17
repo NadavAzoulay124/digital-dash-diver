@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Calendar, CheckSquare, Target, TrendingUp, Clock } from "lucide-react";
+import { Search, Calendar, CheckSquare, Target, TrendingUp, Clock, AlertTriangle, Bell } from "lucide-react";
 import { ConversationSummary } from "./ConversationSummary";
 import { ClientInsights } from "./ClientInsights";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/use-toast";
+import { differenceInDays } from "date-fns";
 
 interface ClientGoal {
   id: string;
@@ -29,6 +32,7 @@ interface Client {
   lastContact: string;
   openTasks: number;
   goals: ClientGoal[];
+  alertThreshold: number;
 }
 
 const mockMeetings: Meeting[] = [
@@ -74,6 +78,7 @@ const mockClients: Client[] = [
     name: "Acme Corp",
     lastContact: "2024-02-25",
     openTasks: 5,
+    alertThreshold: 3,
     goals: [
       {
         id: "g1",
@@ -94,6 +99,7 @@ const mockClients: Client[] = [
     name: "TechStart Inc",
     lastContact: "2024-02-24",
     openTasks: 3,
+    alertThreshold: 7,
     goals: [
       {
         id: "g3",
@@ -108,12 +114,39 @@ const mockClients: Client[] = [
 export const ClientContactDashboard = () => {
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
+  const [clients, setClients] = useState(mockClients);
 
-  const filteredClients = mockClients.filter(client =>
+  const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedClientData = mockClients.find(client => client.id === selectedClient);
+  const selectedClientData = clients.find(client => client.id === selectedClient);
+
+  const updateAlertThreshold = (clientId: string, newThreshold: number) => {
+    setClients(prevClients =>
+      prevClients.map(client =>
+        client.id === clientId
+          ? { ...client, alertThreshold: newThreshold }
+          : client
+      )
+    );
+    toast({
+      title: "Alert threshold updated",
+      description: `Contact reminder set to ${newThreshold} days`,
+    });
+  };
+
+  const getDaysSinceLastContact = (lastContact: string) => {
+    const lastContactDate = new Date(lastContact);
+    const today = new Date();
+    return differenceInDays(today, lastContactDate);
+  };
+
+  const shouldShowAlert = (client: Client) => {
+    const daysSinceContact = getDaysSinceLastContact(client.lastContact);
+    return daysSinceContact >= client.alertThreshold;
+  };
 
   return (
     <div className="space-y-6">
@@ -138,14 +171,28 @@ export const ClientContactDashboard = () => {
           <CardContent>
             <div className="space-y-2">
               {filteredClients.map((client) => (
-                <Button
-                  key={client.id}
-                  variant={selectedClient === client.id ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => setSelectedClient(client.id)}
-                >
-                  {client.name}
-                </Button>
+                <div key={client.id} className="space-y-2">
+                  <Button
+                    variant={selectedClient === client.id ? "default" : "ghost"}
+                    className="w-full justify-start relative"
+                    onClick={() => setSelectedClient(client.id)}
+                  >
+                    <span className="flex items-center gap-2">
+                      {client.name}
+                      {shouldShowAlert(client) && (
+                        <AlertTriangle className="h-4 w-4 text-warning" />
+                      )}
+                    </span>
+                  </Button>
+                  {shouldShowAlert(client) && (
+                    <Alert variant="warning" className="mt-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        No contact for {getDaysSinceLastContact(client.lastContact)} days
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
               ))}
             </div>
           </CardContent>
@@ -166,6 +213,19 @@ export const ClientContactDashboard = () => {
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <CheckSquare className="w-4 h-4" />
                   <span>Open Tasks: {selectedClientData.openTasks}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  <span className="text-sm">Alert Threshold:</span>
+                  <Input
+                    type="number"
+                    value={selectedClientData.alertThreshold}
+                    onChange={(e) => updateAlertThreshold(selectedClientData.id, parseInt(e.target.value))}
+                    className="w-20 h-8"
+                    min={1}
+                    max={30}
+                  />
+                  <span className="text-sm text-muted-foreground">days</span>
                 </div>
               </CardContent>
             </Card>

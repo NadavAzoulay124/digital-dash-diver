@@ -1,3 +1,4 @@
+
 import { Home, BarChart2, Users, Mail, Settings, ListChecks, Calendar, FileText, Target, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -49,6 +50,16 @@ export const DashboardSidebar = ({ role }: DashboardSidebarProps) => {
     employee: "Employee Portal"
   };
 
+  const isPathActive = (path: string) => {
+    if (path === `/${role}` && location.pathname === path) {
+      return true;
+    }
+    if (path !== `/${role}` && location.pathname.startsWith(path)) {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -63,7 +74,8 @@ export const DashboardSidebar = ({ role }: DashboardSidebarProps) => {
                   <SidebarMenuButton 
                     onClick={() => navigate(item.path)}
                     className={cn(
-                      location.pathname === item.path && "bg-primary/10 text-primary"
+                      "transition-colors hover:text-primary",
+                      isPathActive(item.path) && "bg-primary/10 text-primary"
                     )}
                   >
                     <item.icon className="w-5 h-5" />

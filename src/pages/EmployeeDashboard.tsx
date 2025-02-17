@@ -1,4 +1,5 @@
 
+import { Routes, Route } from "react-router-dom";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ClientContactDashboard } from "@/components/dashboard/ClientContactDashboard";
@@ -6,7 +7,6 @@ import { AIAssistant } from "@/components/dashboard/AIAssistant";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { ClientInsights } from "@/components/dashboard/ClientInsights";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ignoredTasks } from "@/data/mockTasks";
 
 const EmployeeDashboard = () => {
@@ -16,37 +16,38 @@ const EmployeeDashboard = () => {
         <DashboardSidebar role="employee" />
         <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold mb-8">Employee Dashboard</h1>
-            
-            <Tabs defaultValue="contacts" className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="contacts">Client Contacts</TabsTrigger>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                <TabsTrigger value="leads">Campaign Leads</TabsTrigger>
-                <TabsTrigger value="assistant">AI Assistant</TabsTrigger>
-                <TabsTrigger value="insights">Client Insights</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="contacts">
-                <ClientContactDashboard />
-              </TabsContent>
-
-              <TabsContent value="tasks">
-                <TaskBoard tasks={ignoredTasks} />
-              </TabsContent>
-
-              <TabsContent value="leads">
-                <LeadsBoard />
-              </TabsContent>
-
-              <TabsContent value="assistant">
-                <AIAssistant />
-              </TabsContent>
-
-              <TabsContent value="insights">
-                <ClientInsights />
-              </TabsContent>
-            </Tabs>
+            <Routes>
+              <Route path="/" element={
+                <>
+                  <h1 className="text-2xl font-bold mb-8">Overview</h1>
+                  <ClientContactDashboard />
+                </>
+              } />
+              <Route path="/tasks" element={
+                <>
+                  <h1 className="text-2xl font-bold mb-8">Tasks</h1>
+                  <TaskBoard tasks={ignoredTasks} />
+                </>
+              } />
+              <Route path="/schedule" element={
+                <>
+                  <h1 className="text-2xl font-bold mb-8">Schedule</h1>
+                  <LeadsBoard />
+                </>
+              } />
+              <Route path="/messages" element={
+                <>
+                  <h1 className="text-2xl font-bold mb-8">Messages</h1>
+                  <AIAssistant />
+                </>
+              } />
+              <Route path="/settings" element={
+                <>
+                  <h1 className="text-2xl font-bold mb-8">Settings</h1>
+                  <ClientInsights />
+                </>
+              } />
+            </Routes>
           </div>
         </main>
       </div>

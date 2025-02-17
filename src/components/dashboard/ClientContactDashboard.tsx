@@ -76,7 +76,7 @@ const mockClients: Client[] = [
   {
     id: "1",
     name: "Acme Corp",
-    lastContact: "2024-02-25",
+    lastContact: "2024-03-15",
     openTasks: 5,
     alertThreshold: 3,
     goals: [
@@ -97,7 +97,7 @@ const mockClients: Client[] = [
   {
     id: "2",
     name: "TechStart Inc",
-    lastContact: "2024-02-24",
+    lastContact: "2024-03-14",
     openTasks: 3,
     alertThreshold: 7,
     goals: [
@@ -180,13 +180,13 @@ export const ClientContactDashboard = () => {
                     <span className="flex items-center gap-2">
                       {client.name}
                       {shouldShowAlert(client) && (
-                        <AlertTriangle className="h-4 w-4 text-destructive" />
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
                       )}
                     </span>
                   </Button>
                   {shouldShowAlert(client) && (
-                    <Alert variant="destructive" className="mt-2">
-                      <AlertTriangle className="h-4 w-4" />
+                    <Alert variant="destructive" className="mt-2 border-red-500 bg-red-50 text-red-600">
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
                       <AlertDescription>
                         No contact for {getDaysSinceLastContact(client.lastContact)} days
                       </AlertDescription>

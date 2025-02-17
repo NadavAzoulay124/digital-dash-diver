@@ -5,6 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertTriangle, TrendingUp, Target, DollarSign, Users, BarChart } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PlatformMetric {
   platform: string;
@@ -145,20 +152,32 @@ const recentPosts: SocialPost[] = [
 export const AIAssistant = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
+  const [selectedClient, setSelectedClient] = useState<string>("all");
   const { toast } = useToast();
 
+  const uniqueClients = Array.from(new Set([
+    ...platformMetrics.map(m => m.accountId),
+    ...platformMetrics.map(m => m.campaignId)
+  ])).filter(Boolean) as string[];
+
   const generateInsights = () => {
-    const insights: string[] = [];
+    let insights: string[] = [];
 
     platformMetrics.forEach((metric) => {
-      if (metric.changePercentage >= 20) {
-        insights.push(
-          `📈 ${metric.platform} ${metric.metric} has increased significantly by ${metric.changePercentage}%. This is a great achievement to share with the client and potentially replicate the successful strategy across other campaigns.`
-        );
-      } else if (metric.changePercentage <= -15) {
-        insights.push(
-          `📉 ${metric.platform} ${metric.metric} has decreased by ${Math.abs(metric.changePercentage)}%. Consider reviewing recent changes and adjusting the strategy accordingly.`
-        );
+      if (
+        selectedClient === "all" || 
+        metric.accountId === selectedClient || 
+        metric.campaignId === selectedClient
+      ) {
+        if (metric.changePercentage >= 20) {
+          insights.push(
+            `📈 ${metric.platform} ${metric.metric} has increased significantly by ${metric.changePercentage}%. This is a great achievement to share with the client and potentially replicate the successful strategy across other campaigns.`
+          );
+        } else if (metric.changePercentage <= -15) {
+          insights.push(
+            `📉 ${metric.platform} ${metric.metric} has decreased by ${Math.abs(metric.changePercentage)}%. Consider reviewing recent changes and adjusting the strategy accordingly.`
+          );
+        }
       }
     });
 
@@ -230,13 +249,31 @@ export const AIAssistant = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            Important Client Insights
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Important Client Insights
+            </CardTitle>
+            <Select
+              value={selectedClient}
+              onValueChange={setSelectedClient}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by client" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Clients</SelectItem>
+                {uniqueClients.map((clientId) => (
+                  <SelectItem key={clientId} value={clientId}>
+                    Client {clientId}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {initialInsights.map((insight, index) => (
               <Alert key={index} variant={
                 insight.includes("⚠️") ? "destructive" : 

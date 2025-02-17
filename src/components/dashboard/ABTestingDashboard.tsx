@@ -1,9 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ABTest {
   id: string;
+  testType: "campaign" | "ad_group" | "ad" | "budget";
   campaignName: string;
   variantA: string;
   variantB: string;
@@ -38,6 +40,7 @@ interface ABTest {
 const mockTests: ABTest[] = [
   {
     id: "1",
+    testType: "campaign",
     campaignName: "Summer Sale",
     variantA: "Original Banner",
     variantB: "New Design",
@@ -58,6 +61,7 @@ const mockTests: ABTest[] = [
   },
   {
     id: "2",
+    testType: "campaign",
     campaignName: "Spring Collection",
     variantA: "Product Focus",
     variantB: "Lifestyle Focus",
@@ -81,14 +85,55 @@ const mockTests: ABTest[] = [
 export const ABTestingDashboard = () => {
   const [tests, setTests] = useState<ABTest[]>(mockTests);
   const [newTest, setNewTest] = useState({
+    testType: "campaign" as ABTest["testType"],
     campaignName: "",
     variantA: "",
     variantB: "",
   });
   const { toast } = useToast();
 
+  const getTestTypeLabel = (type: ABTest["testType"]) => {
+    switch (type) {
+      case "campaign":
+        return "Campaign";
+      case "ad_group":
+        return "Ad Group";
+      case "ad":
+        return "Ad";
+      case "budget":
+        return "Budget";
+      default:
+        return type;
+    }
+  };
+
+  const getPlaceholderText = (type: ABTest["testType"]) => {
+    switch (type) {
+      case "campaign":
+        return {
+          variantA: "Original Campaign",
+          variantB: "New Campaign",
+        };
+      case "ad_group":
+        return {
+          variantA: "Original Ad Group",
+          variantB: "New Ad Group",
+        };
+      case "ad":
+        return {
+          variantA: "Original Ad",
+          variantB: "New Ad",
+        };
+      case "budget":
+        return {
+          variantA: "Original Budget",
+          variantB: "New Budget",
+        };
+    }
+  };
+
   const handleCreateTest = () => {
-    if (!newTest.campaignName || !newTest.variantA || !newTest.variantB) {
+    if (!newTest.campaignName || !newTest.variantA || !newTest.variantB || !newTest.testType) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -117,7 +162,12 @@ export const ABTestingDashboard = () => {
     };
 
     setTests([test, ...tests]);
-    setNewTest({ campaignName: "", variantA: "", variantB: "" });
+    setNewTest({
+      testType: "campaign",
+      campaignName: "",
+      variantA: "",
+      variantB: "",
+    });
     toast({
       title: "Success",
       description: "A/B test created successfully",
@@ -152,33 +202,75 @@ export const ABTestingDashboard = () => {
           <CardTitle>Create New A/B Test</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              placeholder="Campaign Name"
-              value={newTest.campaignName}
-              onChange={(e) => setNewTest({ ...newTest, campaignName: e.target.value })}
-            />
-            <Input
-              placeholder="Variant A Name"
-              value={newTest.variantA}
-              onChange={(e) => setNewTest({ ...newTest, variantA: e.target.value })}
-            />
-            <Input
-              placeholder="Variant B Name"
-              value={newTest.variantB}
-              onChange={(e) => setNewTest({ ...newTest, variantB: e.target.value })}
-            />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Test Type</Label>
+                <Select
+                  value={newTest.testType}
+                  onValueChange={(value: ABTest["testType"]) => {
+                    setNewTest({
+                      ...newTest,
+                      testType: value,
+                      variantA: "",
+                      variantB: "",
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select test type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="campaign">Campaign</SelectItem>
+                    <SelectItem value="ad_group">Ad Group</SelectItem>
+                    <SelectItem value="ad">Ad</SelectItem>
+                    <SelectItem value="budget">Budget</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Campaign Name</Label>
+                <Input
+                  placeholder="Campaign Name"
+                  value={newTest.campaignName}
+                  onChange={(e) => setNewTest({ ...newTest, campaignName: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Variant A</Label>
+                <Input
+                  placeholder={getPlaceholderText(newTest.testType).variantA}
+                  value={newTest.variantA}
+                  onChange={(e) => setNewTest({ ...newTest, variantA: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Variant B</Label>
+                <Input
+                  placeholder={getPlaceholderText(newTest.testType).variantB}
+                  value={newTest.variantB}
+                  onChange={(e) => setNewTest({ ...newTest, variantB: e.target.value })}
+                />
+              </div>
+            </div>
+            <Button onClick={handleCreateTest} className="w-full">
+              Create A/B Test
+            </Button>
           </div>
-          <Button onClick={handleCreateTest} className="mt-4">
-            Create A/B Test
-          </Button>
         </CardContent>
       </Card>
 
       {tests.map((test) => (
         <Card key={test.id}>
           <CardHeader>
-            <CardTitle>{test.campaignName}</CardTitle>
+            <CardTitle>
+              <div className="flex items-center justify-between">
+                <span>{test.campaignName}</span>
+                <Badge variant="outline">{getTestTypeLabel(test.testType)}</Badge>
+              </div>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

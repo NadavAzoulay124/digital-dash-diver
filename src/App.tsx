@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink, Navigate } from "react-router-dom";
 import AgencyDashboard from "./pages/AgencyDashboard";
 import ClientDashboard from "./pages/ClientDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
@@ -15,12 +15,28 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
     });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  if (isLoading) {
+    return null; // or a loading spinner
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -87,11 +103,26 @@ const AppContent = () => {
 
           <main className="max-w-7xl mx-auto px-4 py-6">
             <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/" element={<AgencyDashboard />} />
-              <Route path="/agency/*" element={<AgencyDashboard />} />
-              <Route path="/client/*" element={<ClientDashboard />} />
-              <Route path="/employee/*" element={<EmployeeDashboard />} />
+              <Route 
+                path="/" 
+                element={isAuthenticated ? <Navigate to="/agency" /> : <Navigate to="/auth" />} 
+              />
+              <Route 
+                path="/auth" 
+                element={!isAuthenticated ? <AuthPage /> : <Navigate to="/agency" />} 
+              />
+              <Route 
+                path="/agency/*" 
+                element={isAuthenticated ? <AgencyDashboard /> : <Navigate to="/auth" />} 
+              />
+              <Route 
+                path="/client/*" 
+                element={isAuthenticated ? <ClientDashboard /> : <Navigate to="/auth" />} 
+              />
+              <Route 
+                path="/employee/*" 
+                element={isAuthenticated ? <EmployeeDashboard /> : <Navigate to="/auth" />} 
+              />
             </Routes>
           </main>
         </div>

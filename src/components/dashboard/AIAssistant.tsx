@@ -205,6 +205,7 @@ export const AIAssistant = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [selectedClient, setSelectedClient] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const uniqueClients = Array.from(new Set([
@@ -312,32 +313,43 @@ export const AIAssistant = () => {
     e.preventDefault();
     if (!query) return;
 
+    setIsLoading(true);
     const insights = generateInsights();
-    let aiResponse = `Based on the comprehensive analysis of your campaigns:\n\n`;
-    
-    insights.forEach((insight) => {
-      aiResponse += `${insight}\n\n`;
-    });
 
-    if (query.toLowerCase().includes("performance")) {
-      aiResponse += `\nRegarding your performance query: The best performing platform currently is ${
-        platformMetrics.reduce((a, b) => a.changePercentage > b.changePercentage ? a : b).platform
-      } with significant growth in key metrics.\n`;
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-insights', {
+        body: {
+          query,
+          insights,
+          selectedClient
+        }
+      });
+
+      if (error) {
+        console.error('Error calling generate-insights:', error);
+        toast({
+          title: "Error",
+          description: "Failed to generate AI insights. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setResponse(data.response);
+      toast({
+        title: "AI Insights Generated",
+        description: "Analysis complete! Review the recommendations below.",
+      });
+    } catch (err) {
+      console.error('Error:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-    if (query.toLowerCase().includes("recommendation") || query.toLowerCase().includes("suggest")) {
-      aiResponse += `\nTop Recommendations:\n`;
-      aiResponse += `1. Focus on high-performing content types identified from recent posts\n`;
-      aiResponse += `2. Optimize or pause underperforming keywords\n`;
-      aiResponse += `3. Scale successful campaigns with similar audience targeting\n`;
-    }
-
-    setResponse(aiResponse);
-    
-    toast({
-      title: "AI Insights Generated",
-      description: "Comprehensive analysis of campaign performance and recommendations are ready.",
-    });
   };
 
   const initialInsights = generateInsights();
@@ -408,9 +420,12 @@ export const AIAssistant = () => {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask specific questions about campaign performance, social media metrics, or get recommendations..."
                 rows={4}
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full">Get AI Insights</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Generating Insights..." : "Get AI Insights"}
+            </Button>
             
             {response && (
               <div className="mt-4 p-4 bg-muted rounded-lg">

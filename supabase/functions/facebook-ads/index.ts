@@ -1,5 +1,5 @@
 
-import { serve } from "https://deno.fresh.run/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,8 +32,11 @@ serve(async (req) => {
 
     const { adAccountId, accessToken } = requestData;
 
+    // Ensure adAccountId starts with 'act_'
+    const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
+
     // Fetch campaigns with insights
-    const campaignsUrl = `https://graph.facebook.com/v19.0/${adAccountId}/campaigns`;
+    const campaignsUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
     const insightsFields = 'impressions,clicks,spend,conversions';
     const campaignFields = 'name,objective,status,insights{' + insightsFields + '}';
     

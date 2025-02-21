@@ -1,18 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
-import { TrashIcon, PlusCircle, AlertCircle } from "lucide-react";
-
-interface SavedCredential {
-  id: string;
-  ad_account_id: string;
-  account_name: string;
-  created_at: string;
-}
+import { PlusCircle } from "lucide-react";
+import { SavedAccountsList } from "./SavedAccountsList";
+import { NewAccountForm } from "./NewAccountForm";
+import { SavedCredential, FormErrors } from "./types";
 
 export const FacebookConnectForm = () => {
   const [adAccountId, setAdAccountId] = useState("");
@@ -22,11 +16,7 @@ export const FacebookConnectForm = () => {
   const [savedCredentials, setSavedCredentials] = useState<SavedCredential[]>([]);
   const [showNewForm, setShowNewForm] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-  const [formErrors, setFormErrors] = useState<{
-    accountName?: string;
-    adAccountId?: string;
-    accessToken?: string;
-  }>({});
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -73,7 +63,7 @@ export const FacebookConnectForm = () => {
   };
 
   const validateForm = () => {
-    const errors: typeof formErrors = {};
+    const errors: FormErrors = {};
     if (!accountName.trim()) {
       errors.accountName = "Account name is required";
     }
@@ -184,6 +174,14 @@ export const FacebookConnectForm = () => {
     }
   };
 
+  const handleCancel = () => {
+    setShowNewForm(false);
+    setFormErrors({});
+    setAdAccountId("");
+    setAccountName("");
+    setAccessToken("");
+  };
+
   return (
     <div className="space-y-4 bg-white p-6 rounded-lg shadow">
       <div className="space-y-2">
@@ -193,47 +191,13 @@ export const FacebookConnectForm = () => {
         </p>
       </div>
 
-      <ScrollArea className="h-[200px] rounded-md border">
-        {isLoading ? (
-          <div className="p-4 text-center text-gray-500">
-            Loading accounts...
-          </div>
-        ) : savedCredentials.length > 0 ? (
-          <div className="space-y-2 p-4">
-            {savedCredentials.map((cred) => (
-              <Card 
-                key={cred.id} 
-                className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${
-                  selectedAccountId === cred.id ? 'bg-primary/10 border-primary' : 'hover:bg-accent'
-                }`}
-                onClick={() => handleAccountSelect(cred.id)}
-              >
-                <div>
-                  <p className="font-medium">{cred.account_name}</p>
-                  <p className="text-sm text-gray-500">Account ID: {cred.ad_account_id}</p>
-                  <p className="text-xs text-gray-400">
-                    Connected on {new Date(cred.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(cred.id);
-                  }}
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </Button>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="p-4 text-center text-gray-500">
-            No connected accounts
-          </div>
-        )}
-      </ScrollArea>
+      <SavedAccountsList
+        isLoading={isLoading}
+        savedCredentials={savedCredentials}
+        selectedAccountId={selectedAccountId}
+        onAccountSelect={handleAccountSelect}
+        onDelete={handleDelete}
+      />
 
       {!showNewForm && (
         <Button 
@@ -247,91 +211,18 @@ export const FacebookConnectForm = () => {
       )}
 
       {showNewForm && (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="accountName" className="block text-sm font-medium text-gray-700">
-              Account Name*
-            </label>
-            <div className="mt-1">
-              <Input
-                id="accountName"
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                placeholder="Enter a name for this account"
-                className={formErrors.accountName ? "border-red-500" : ""}
-              />
-              {formErrors.accountName && (
-                <p className="text-sm text-red-500 flex items-center mt-1">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {formErrors.accountName}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="adAccountId" className="block text-sm font-medium text-gray-700">
-              Ad Account ID*
-            </label>
-            <div className="mt-1">
-              <Input
-                id="adAccountId"
-                value={adAccountId}
-                onChange={(e) => setAdAccountId(e.target.value)}
-                placeholder="Enter your Ad Account ID"
-                className={formErrors.adAccountId ? "border-red-500" : ""}
-              />
-              {formErrors.adAccountId && (
-                <p className="text-sm text-red-500 flex items-center mt-1">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {formErrors.adAccountId}
-                </p>
-              )}
-            </div>
-          </div>
-          
-          <div>
-            <label htmlFor="accessToken" className="block text-sm font-medium text-gray-700">
-              Access Token*
-            </label>
-            <div className="mt-1">
-              <Input
-                id="accessToken"
-                type="password"
-                value={accessToken}
-                onChange={(e) => setAccessToken(e.target.value)}
-                placeholder="Enter your Access Token"
-                className={formErrors.accessToken ? "border-red-500" : ""}
-              />
-              {formErrors.accessToken && (
-                <p className="text-sm text-red-500 flex items-center mt-1">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {formErrors.accessToken}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex space-x-2">
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting ? "Connecting..." : "Connect Account"}
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => {
-                setShowNewForm(false);
-                setFormErrors({});
-                setAdAccountId("");
-                setAccountName("");
-                setAccessToken("");
-              }}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+        <NewAccountForm
+          accountName={accountName}
+          adAccountId={adAccountId}
+          accessToken={accessToken}
+          formErrors={formErrors}
+          isSubmitting={isSubmitting}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          onAccountNameChange={setAccountName}
+          onAdAccountIdChange={setAdAccountId}
+          onAccessTokenChange={setAccessToken}
+        />
       )}
     </div>
   );

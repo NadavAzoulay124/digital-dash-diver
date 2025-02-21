@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { TrashIcon, PlusCircle } from "lucide-react";
+import { TrashIcon, PlusCircle, AlertCircle } from "lucide-react";
 
 interface SavedCredential {
   id: string;
@@ -23,6 +23,11 @@ export const FacebookConnectForm = () => {
   const [savedCredentials, setSavedCredentials] = useState<SavedCredential[]>([]);
   const [showNewForm, setShowNewForm] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<{
+    accountName?: string;
+    adAccountId?: string;
+    accessToken?: string;
+  }>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,6 +58,21 @@ export const FacebookConnectForm = () => {
     }
   };
 
+  const validateForm = () => {
+    const errors: typeof formErrors = {};
+    if (!accountName.trim()) {
+      errors.accountName = "Account name is required";
+    }
+    if (!adAccountId.trim()) {
+      errors.adAccountId = "Ad Account ID is required";
+    }
+    if (!accessToken.trim()) {
+      errors.accessToken = "Access Token is required";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAccountSelect = (credentialId: string) => {
     setSelectedAccountId(credentialId);
     toast({
@@ -63,6 +83,7 @@ export const FacebookConnectForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setIsSubmitting(true);
 
     try {
@@ -75,16 +96,21 @@ export const FacebookConnectForm = () => {
         .from('facebook_ads_credentials')
         .insert({ 
           ad_account_id: adAccountId,
-          account_name: accountName,
+          account_name: accountName.trim(),
           access_token: accessToken,
           user_id: user.user.id
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error('This ad account is already connected to your profile');
+        }
+        throw error;
+      }
 
-      console.log('Inserted credential:', data); // Debug log
+      console.log('Inserted credential:', data);
 
       toast({
         title: "Success",
@@ -94,8 +120,9 @@ export const FacebookConnectForm = () => {
       setAdAccountId("");
       setAccountName("");
       setAccessToken("");
+      setFormErrors({});
       setShowNewForm(false);
-      await fetchSavedCredentials(); // Immediately refresh the list
+      await fetchSavedCredentials();
       
     } catch (error) {
       console.error('Error in handleSubmit:', error);
@@ -150,7 +177,7 @@ export const FacebookConnectForm = () => {
         {savedCredentials.length > 0 ? (
           <div className="space-y-2 p-4">
             {savedCredentials.map((cred) => {
-              console.log('Rendering credential:', cred); // Debug log for each credential
+              console.log('Rendering credential:', cred);
               return (
                 <Card 
                   key={cred.id} 
@@ -160,7 +187,7 @@ export const FacebookConnectForm = () => {
                   onClick={() => handleAccountSelect(cred.id)}
                 >
                   <div>
-                    <p className="font-medium">{cred.account_name || 'Unnamed Account'}</p>
+                    <p className="font-medium">{cred.account_name}</p>
                     <p className="text-sm text-gray-500">Account ID: {cred.ad_account_id}</p>
                     <p className="text-xs text-gray-400">
                       Connected on {new Date(cred.created_at).toLocaleDateString()}
@@ -202,45 +229,66 @@ export const FacebookConnectForm = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="accountName" className="block text-sm font-medium text-gray-700">
-              Account Name
+              Account Name*
             </label>
-            <Input
-              id="accountName"
-              value={accountName}
-              onChange={(e) => setAccountName(e.target.value)}
-              placeholder="Enter account name"
-              required
-              className="mt-1"
-            />
+            <div className="mt-1">
+              <Input
+                id="accountName"
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+                placeholder="Enter a name for this account"
+                className={formErrors.accountName ? "border-red-500" : ""}
+              />
+              {formErrors.accountName && (
+                <p className="text-sm text-red-500 flex items-center mt-1">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {formErrors.accountName}
+                </p>
+              )}
+            </div>
           </div>
 
           <div>
             <label htmlFor="adAccountId" className="block text-sm font-medium text-gray-700">
-              Ad Account ID
+              Ad Account ID*
             </label>
-            <Input
-              id="adAccountId"
-              value={adAccountId}
-              onChange={(e) => setAdAccountId(e.target.value)}
-              placeholder="Enter your Ad Account ID"
-              required
-              className="mt-1"
-            />
+            <div className="mt-1">
+              <Input
+                id="adAccountId"
+                value={adAccountId}
+                onChange={(e) => setAdAccountId(e.target.value)}
+                placeholder="Enter your Ad Account ID"
+                className={formErrors.adAccountId ? "border-red-500" : ""}
+              />
+              {formErrors.adAccountId && (
+                <p className="text-sm text-red-500 flex items-center mt-1">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {formErrors.adAccountId}
+                </p>
+              )}
+            </div>
           </div>
           
           <div>
             <label htmlFor="accessToken" className="block text-sm font-medium text-gray-700">
-              Access Token
+              Access Token*
             </label>
-            <Input
-              id="accessToken"
-              type="password"
-              value={accessToken}
-              onChange={(e) => setAccessToken(e.target.value)}
-              placeholder="Enter your Access Token"
-              required
-              className="mt-1"
-            />
+            <div className="mt-1">
+              <Input
+                id="accessToken"
+                type="password"
+                value={accessToken}
+                onChange={(e) => setAccessToken(e.target.value)}
+                placeholder="Enter your Access Token"
+                className={formErrors.accessToken ? "border-red-500" : ""}
+              />
+              {formErrors.accessToken && (
+                <p className="text-sm text-red-500 flex items-center mt-1">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {formErrors.accessToken}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="flex space-x-2">
@@ -250,7 +298,13 @@ export const FacebookConnectForm = () => {
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => setShowNewForm(false)}
+              onClick={() => {
+                setShowNewForm(false);
+                setFormErrors({});
+                setAdAccountId("");
+                setAccountName("");
+                setAccessToken("");
+              }}
               className="flex-1"
             >
               Cancel
@@ -261,4 +315,3 @@ export const FacebookConnectForm = () => {
     </div>
   );
 };
-

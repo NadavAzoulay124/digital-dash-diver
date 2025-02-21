@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Contract } from "./types";
 import { formatDistanceToNow } from "date-fns";
@@ -15,16 +15,16 @@ interface ContractViewerProps {
   contract: Contract & { contract_services: any[] };
   isOpen: boolean;
   onClose: () => void;
-  recipientEmail?: string; // New optional prop for pre-populated email
+  recipientEmail?: string;
 }
 
 export const ContractViewer = ({ 
   contract, 
   isOpen, 
   onClose,
-  recipientEmail = "" // Default to empty string if not provided
+  recipientEmail = ""
 }: ContractViewerProps) => {
-  const [email, setEmail] = useState(recipientEmail); // Initialize with provided email
+  const [email, setEmail] = useState(recipientEmail);
   const [isSending, setIsSending] = useState(false);
 
   const handleSendEmail = async () => {
@@ -52,7 +52,7 @@ export const ContractViewer = ({
       if (error) throw error;
 
       toast.success("Contract details sent successfully!");
-      setEmail(""); // Clear the email field after successful send
+      setEmail("");
     } catch (error) {
       console.error("Error sending contract email:", error);
       toast.error("Failed to send contract details. Please try again.");
@@ -61,8 +61,8 @@ export const ContractViewer = ({
     }
   };
 
-  // Reset email state when recipientEmail prop changes
-  useState(() => {
+  // Update email state when recipientEmail prop changes
+  useEffect(() => {
     setEmail(recipientEmail);
   }, [recipientEmail]);
 
@@ -171,3 +171,4 @@ export const ContractViewer = ({
     </Dialog>
   );
 };
+

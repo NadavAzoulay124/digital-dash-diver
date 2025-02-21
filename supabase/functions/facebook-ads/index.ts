@@ -33,22 +33,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log('Fetching campaigns for account:', credentials.ad_account_id);
+
     // Call Facebook Marketing API
     const fbResponse = await fetch(
-      `https://graph.facebook.com/v19.0/${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{impressions,clicks,conversions}&access_token=${credentials.access_token}`
+      `https://graph.facebook.com/v19.0/act_${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{impressions,clicks,conversions}&access_token=${credentials.access_token}`
     );
 
     if (!fbResponse.ok) {
       const fbError = await fbResponse.json();
       console.error('Facebook API error:', fbError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch Facebook campaigns' }), 
+        JSON.stringify({ error: 'Failed to fetch Facebook campaigns', details: fbError }), 
         { status: fbResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const data = await fbResponse.json();
-    console.log('Facebook API response:', data);
+    console.log('Successfully fetched Facebook campaigns:', data);
 
     return new Response(
       JSON.stringify({ data }), 
@@ -58,7 +60,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Server error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }), 
+      JSON.stringify({ error: 'Internal server error', details: error.message }), 
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

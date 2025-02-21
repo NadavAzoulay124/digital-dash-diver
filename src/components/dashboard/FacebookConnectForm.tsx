@@ -16,22 +16,48 @@ export const FacebookConnectForm = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('facebook_ads_credentials')
-        .upsert({ 
-          ad_account_id: adAccountId,
-          access_token: accessToken,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        });
+      const userId = (await supabase.auth.getUser()).data.user?.id;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
 
-      if (error) {
-        console.error('Error saving credentials:', error);
-        throw new Error(error.message);
+      // First try to get existing credentials
+      const { data: existingCreds } = await supabase
+        .from('facebook_ads_credentials')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      let result;
+      if (existingCreds) {
+        // Update existing credentials
+        result = await supabase
+          .from('facebook_ads_credentials')
+          .update({ 
+            ad_account_id: adAccountId,
+            access_token: accessToken,
+          })
+          .eq('user_id', userId);
+      } else {
+        // Insert new credentials
+        result = await supabase
+          .from('facebook_ads_credentials')
+          .insert({ 
+            ad_account_id: adAccountId,
+            access_token: accessToken,
+            user_id: userId
+          });
+      }
+
+      if (result.error) {
+        console.error('Error saving credentials:', result.error);
+        throw new Error(result.error.message);
       }
 
       toast({
         title: "Success",
-        description: "Facebook Ads credentials saved successfully",
+        description: `Facebook Ads credentials ${existingCreds ? 'updated' : 'saved'} successfully`,
       });
       
       // Clear form

@@ -30,6 +30,9 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { recipientEmail, contractDetails }: SendContractEmailRequest = await req.json();
 
+    console.log("Attempting to send contract email to:", recipientEmail);
+    console.log("Contract details:", contractDetails);
+
     // Format services list for email
     const servicesList = contractDetails.services
       .map(service => `
@@ -40,8 +43,11 @@ const handler = async (req: Request): Promise<Response> => {
       `)
       .join("");
 
+    // For testing - can only send to verified emails until domain is verified
+    const fromEmail = "Contract Service <onboarding@resend.dev>";
+
     const emailResponse = await resend.emails.send({
-      from: "Contracts <onboarding@resend.dev>",
+      from: fromEmail,
       to: [recipientEmail],
       subject: `Contract Details for ${contractDetails.client_company}`,
       html: `
@@ -88,10 +94,20 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error sending contract email:", error);
+    
+    // Provide more specific error message for validation errors
+    let errorMessage = error.message;
+    if (error.statusCode === 403 && error.message.includes("verify a domain")) {
+      errorMessage = "Email sending restricted: During testing, you can only send emails to your own verified email address. To send to other addresses, please verify your domain at resend.com/domains";
+    }
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: errorMessage,
+        details: error.message 
+      }),
       {
-        status: 500,
+        status: error.statusCode || 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );

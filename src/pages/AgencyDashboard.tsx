@@ -6,6 +6,8 @@ import { CampaignChart } from "@/components/dashboard/CampaignChart";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { MetricsOverview } from "@/components/dashboard/MetricsOverview";
 import { FinancialOverview } from "@/components/dashboard/FinancialOverview";
+import { ClientOnboarding } from "@/components/dashboard/ClientOnboarding";
+import { ContractCreation } from "@/components/dashboard/ContractCreation";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -32,6 +34,10 @@ const AgencyDashboard = () => {
             <div className="grid gap-6 md:grid-cols-2">
               <CampaignChart />
               <CampaignInsights />
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <ClientOnboarding />
+              <ContractCreation />
             </div>
             <LeadsBoard />
           </div>

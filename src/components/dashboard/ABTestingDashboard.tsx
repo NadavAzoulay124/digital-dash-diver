@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -58,7 +59,7 @@ export const ABTestingDashboard = () => {
       }
 
       if (!hasCredentials) {
-        return null;
+        return { data: [] };
       }
 
       const response = await supabase.functions.invoke('facebook-ads', {
@@ -72,7 +73,7 @@ export const ABTestingDashboard = () => {
         throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
       }
 
-      return response.data;
+      return response.data || { data: [] };
     },
     meta: {
       onError: (error: Error) => {
@@ -143,7 +144,7 @@ export const ABTestingDashboard = () => {
           </AlertDescription>
         </Alert>
       ) : facebookData ? (
-        <FacebookCampaigns campaigns={facebookData.data} />
+        <FacebookCampaigns campaigns={facebookData.data || []} />
       ) : (
         <Alert>
           <AlertCircle className="h-4 w-4" />

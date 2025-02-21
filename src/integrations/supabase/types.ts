@@ -89,6 +89,7 @@ export type Database = {
       facebook_ads_credentials: {
         Row: {
           access_token: string
+          account_name: string
           ad_account_id: string
           created_at: string | null
           id: string
@@ -97,6 +98,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          account_name?: string
           ad_account_id: string
           created_at?: string | null
           id?: string
@@ -105,6 +107,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          account_name?: string
           ad_account_id?: string
           created_at?: string | null
           id?: string

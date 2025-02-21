@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,32 +28,47 @@ export const FacebookConnectForm = () => {
     accessToken?: string;
   }>({});
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchSavedCredentials();
   }, []);
 
   const fetchSavedCredentials = async () => {
+    setIsLoading(true);
     try {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
+      if (!user.user) {
+        console.error('No authenticated user found');
+        return;
+      }
 
+      console.log('Fetching credentials for user:', user.user.id);
       const { data, error } = await supabase
         .from('facebook_ads_credentials')
         .select('id, ad_account_id, account_name, created_at')
         .eq('user_id', user.user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      console.log('Fetched credentials:', data); // Debug log
+      if (error) {
+        console.error('Error fetching credentials:', error);
+        throw error;
+      }
+
+      console.log('Fetched credentials:', data);
+      if (!data || data.length === 0) {
+        console.log('No credentials found for user');
+      }
       setSavedCredentials(data || []);
     } catch (error) {
-      console.error('Error fetching saved credentials:', error);
+      console.error('Error in fetchSavedCredentials:', error);
       toast({
         title: "Error",
-        description: "Failed to load saved accounts",
+        description: "Failed to load saved accounts. Please try refreshing the page.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,6 +106,17 @@ export const FacebookConnectForm = () => {
         throw new Error('User not authenticated');
       }
 
+      const { data: existing } = await supabase
+        .from('facebook_ads_credentials')
+        .select('id, account_name')
+        .eq('user_id', user.user.id)
+        .eq('ad_account_id', adAccountId)
+        .single();
+
+      if (existing) {
+        throw new Error(`This ad account (${existing.account_name}) is already connected to your profile`);
+      }
+
       const { data, error } = await supabase
         .from('facebook_ads_credentials')
         .insert({ 
@@ -103,14 +128,9 @@ export const FacebookConnectForm = () => {
         .select()
         .single();
 
-      if (error) {
-        if (error.code === '23505') {
-          throw new Error('This ad account is already connected to your profile');
-        }
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Inserted credential:', data);
+      console.log('Successfully inserted credential:', data);
 
       toast({
         title: "Success",
@@ -174,38 +194,39 @@ export const FacebookConnectForm = () => {
       </div>
 
       <ScrollArea className="h-[200px] rounded-md border">
-        {savedCredentials.length > 0 ? (
+        {isLoading ? (
+          <div className="p-4 text-center text-gray-500">
+            Loading accounts...
+          </div>
+        ) : savedCredentials.length > 0 ? (
           <div className="space-y-2 p-4">
-            {savedCredentials.map((cred) => {
-              console.log('Rendering credential:', cred);
-              return (
-                <Card 
-                  key={cred.id} 
-                  className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${
-                    selectedAccountId === cred.id ? 'bg-primary/10 border-primary' : 'hover:bg-accent'
-                  }`}
-                  onClick={() => handleAccountSelect(cred.id)}
+            {savedCredentials.map((cred) => (
+              <Card 
+                key={cred.id} 
+                className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${
+                  selectedAccountId === cred.id ? 'bg-primary/10 border-primary' : 'hover:bg-accent'
+                }`}
+                onClick={() => handleAccountSelect(cred.id)}
+              >
+                <div>
+                  <p className="font-medium">{cred.account_name}</p>
+                  <p className="text-sm text-gray-500">Account ID: {cred.ad_account_id}</p>
+                  <p className="text-xs text-gray-400">
+                    Connected on {new Date(cred.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(cred.id);
+                  }}
                 >
-                  <div>
-                    <p className="font-medium">{cred.account_name}</p>
-                    <p className="text-sm text-gray-500">Account ID: {cred.ad_account_id}</p>
-                    <p className="text-xs text-gray-400">
-                      Connected on {new Date(cred.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(cred.id);
-                    }}
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </Button>
-                </Card>
-              );
-            })}
+                  <TrashIcon className="h-4 w-4" />
+                </Button>
+              </Card>
+            ))}
           </div>
         ) : (
           <div className="p-4 text-center text-gray-500">

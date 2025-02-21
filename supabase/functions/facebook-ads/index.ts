@@ -29,11 +29,34 @@ serve(async (req) => {
     if (credentialsError) throw new Error('Failed to fetch credentials')
     if (!credentials) throw new Error('No Facebook credentials found')
 
-    console.log('Fetching campaigns with credentials:', credentials.ad_account_id)
+    console.log('Attempting to fetch campaigns for account:', credentials.ad_account_id)
 
-    // Fetch active campaigns with updated date_preset
+    // First verify the access token and ad account are valid
+    const verifyResponse = await fetch(
+      `https://graph.facebook.com/v19.0/me/adaccounts?access_token=${credentials.access_token}`
+    )
+
+    if (!verifyResponse.ok) {
+      const error = await verifyResponse.json()
+      console.error('Access token validation error:', error)
+      throw new Error(`Facebook API authentication error: ${error.error?.message || 'Unknown error'}`)
+    }
+
+    const verifyData = await verifyResponse.json()
+    console.log('Available ad accounts:', verifyData)
+
+    // Check if the ad account exists in the list
+    const validAccount = verifyData.data.some(account => 
+      account.id === `act_${credentials.ad_account_id}` || account.id === credentials.ad_account_id
+    )
+
+    if (!validAccount) {
+      throw new Error(`Ad account ${credentials.ad_account_id} is not accessible with current credentials`)
+    }
+
+    // If verification passed, fetch campaign data
     const campaignsResponse = await fetch(
-      `https://graph.facebook.com/v19.0/${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{spend,impressions,clicks,conversions}&date_preset=this_month`,
+      `https://graph.facebook.com/v19.0/act_${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{spend,impressions,clicks,conversions}&date_preset=this_month`,
       {
         headers: {
           Authorization: `Bearer ${credentials.access_token}`,
@@ -43,12 +66,17 @@ serve(async (req) => {
 
     if (!campaignsResponse.ok) {
       const error = await campaignsResponse.json()
-      console.error('Facebook API error:', error)
-      throw new Error(`Facebook API error: ${error.error?.message || 'Unknown error'}`)
+      console.error('Campaign fetch error:', error)
+      throw new Error(`Failed to fetch campaigns: ${error.error?.message || 'Unknown error'}`)
     }
 
     const campaigns = await campaignsResponse.json()
     console.log('Raw campaigns data from Facebook:', campaigns)
+
+    if (!campaigns.data || !Array.isArray(campaigns.data)) {
+      console.error('Invalid campaigns response format:', campaigns)
+      throw new Error('Invalid response format from Facebook API')
+    }
 
     // Process campaigns to ensure proper number formatting for spend
     const processedCampaigns = campaigns.data.map(campaign => {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -8,8 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
-import { cn } from "@/lib/utils";
+import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, subYears } from "date-fns";
 
 interface DateRangeFilterProps {
   onDateChange: (startDate: Date | undefined, endDate: Date | undefined) => void;
@@ -26,6 +24,13 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const presets: PresetOption[] = [
+    {
+      label: "Maximum",
+      getValue: () => ({
+        from: subYears(new Date(), 10),
+        to: new Date(),
+      }),
+    },
     {
       label: "Today",
       getValue: () => ({
@@ -200,4 +205,3 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
     </Popover>
   );
 };
-

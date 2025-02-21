@@ -16,6 +16,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface ABTest {
   id: string;
@@ -57,12 +59,32 @@ export const ABTestingDashboard = () => {
     access_token: "",
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access the A/B Testing Dashboard",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+  };
 
   const { data: facebookData, isLoading } = useQuery({
     queryKey: ['facebook-campaigns'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
 
       const response = await supabase.functions.invoke('facebook-ads', {
         headers: {
@@ -74,6 +96,13 @@ export const ABTestingDashboard = () => {
       return response.data;
     },
     enabled: true,
+    retry: 1,
+    onError: (error) => {
+      console.error('Error fetching Facebook campaigns:', error);
+      if (error.message === 'Not authenticated') {
+        navigate("/auth");
+      }
+    }
   });
 
   const handleConnectFacebook = async () => {
@@ -81,10 +110,11 @@ export const ABTestingDashboard = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
-          title: "Error",
-          description: "Please sign in first",
+          title: "Authentication Required",
+          description: "Please sign in to connect your Facebook account",
           variant: "destructive",
         });
+        navigate("/auth");
         return;
       }
 
@@ -103,6 +133,7 @@ export const ABTestingDashboard = () => {
         description: "Facebook account connected successfully",
       });
     } catch (error) {
+      console.error('Error connecting Facebook account:', error);
       toast({
         title: "Error",
         description: error.message,

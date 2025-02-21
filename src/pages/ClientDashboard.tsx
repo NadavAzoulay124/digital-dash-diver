@@ -14,16 +14,19 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { format } from "date-fns";
 
 const ClientDashboard = () => {
   const { toast } = useToast();
+  const [dateRange, setDateRange] = useState<{ startDate?: Date; endDate?: Date }>({});
   
   const handleDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
-    console.log('Date range changed:', { startDate, endDate });
+    setDateRange({ startDate, endDate });
   };
 
   const { data: facebookData, isError, isLoading } = useQuery({
-    queryKey: ['facebook-campaigns'],
+    queryKey: ['facebook-campaigns', dateRange],
     queryFn: async () => {
       const { data: credentials, error: credentialsError } = await supabase
         .from('facebook_ads_credentials')
@@ -40,11 +43,20 @@ const ClientDashboard = () => {
         return { data: [] };
       }
 
-      console.log('Fetching campaigns with credentials:', credentials);
+      const dateParams: any = {};
+      if (dateRange.startDate) {
+        dateParams.since = format(dateRange.startDate, 'yyyy-MM-dd');
+      }
+      if (dateRange.endDate) {
+        dateParams.until = format(dateRange.endDate, 'yyyy-MM-dd');
+      }
+
+      console.log('Fetching campaigns with params:', { credentials, dateParams });
       const response = await supabase.functions.invoke('facebook-ads', {
         body: { 
           adAccountId: credentials.ad_account_id,
-          accessToken: credentials.access_token
+          accessToken: credentials.access_token,
+          ...dateParams
         }
       });
 

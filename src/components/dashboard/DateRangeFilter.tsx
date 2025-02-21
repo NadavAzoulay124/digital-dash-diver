@@ -21,10 +21,13 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
   const handleDateSelect = (date: Date | undefined, isStart: boolean) => {
     if (isStart) {
       setStartDate(date);
+      // If end date is before start date, reset it
+      if (endDate && date && endDate < date) {
+        setEndDate(undefined);
+      }
     } else {
       setEndDate(date);
     }
-    onDateChange(startDate, endDate);
   };
 
   const handleApplyFilter = () => {
@@ -63,6 +66,7 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
             selected={endDate}
             onSelect={(date) => handleDateSelect(date, false)}
             initialFocus
+            disabled={(date) => startDate ? date < startDate : false}
           />
         </PopoverContent>
       </Popover>
@@ -76,3 +80,4 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
     </div>
   );
 };
+

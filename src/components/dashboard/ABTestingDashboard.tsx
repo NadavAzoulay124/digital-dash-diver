@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -48,10 +47,15 @@ export const ABTestingDashboard = () => {
         throw new Error('Not authenticated');
       }
 
-      const { data: hasCredentials } = await supabase
+      const { data: hasCredentials, error: credError } = await supabase
         .from('facebook_ads_credentials')
         .select('id')
         .single();
+
+      if (credError) {
+        console.error('Error checking credentials:', credError);
+        throw new Error('Failed to check Facebook credentials');
+      }
 
       if (!hasCredentials) {
         return null;
@@ -63,7 +67,11 @@ export const ABTestingDashboard = () => {
         },
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        console.error('Edge function error:', response.error);
+        throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
+      }
+
       return response.data;
     },
     meta: {
@@ -74,7 +82,7 @@ export const ABTestingDashboard = () => {
         } else {
           toast({
             title: "Error",
-            description: "Failed to fetch Facebook campaigns. Please check your credentials.",
+            description: error.message || "Failed to fetch Facebook campaigns",
             variant: "destructive",
           });
         }
@@ -161,4 +169,3 @@ export const ABTestingDashboard = () => {
     </div>
   );
 };
-

@@ -1,92 +1,81 @@
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    console.log('Starting Facebook ads data fetch')
-    
-    const supabase = createClient(
+    // Create a Supabase client
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    )
+    );
 
-    // Get the JWT from the authorization header
-    const authHeader = req.headers.get('Authorization')
+    // Get the JWT from the Authorization header
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header')
+      throw new Error('No authorization header');
     }
 
     // Get the user from the JWT
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-
-    if (userError) {
-      console.error('User auth error:', userError)
-      throw userError
-    }
-    if (!user) {
-      console.error('No user found')
-      throw new Error('User not found')
+    const jwt = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt);
+    
+    if (userError || !user) {
+      throw new Error('Invalid user token');
     }
 
-    console.log('Fetching Facebook credentials for user:', user.id)
-
-    // Get user's Facebook credentials
-    const { data: credentials, error: credentialsError } = await supabase
+    // Get the Facebook credentials for this user
+    const { data: credentials, error: credentialsError } = await supabaseClient
       .from('facebook_ads_credentials')
       .select('*')
       .eq('user_id', user.id)
-      .single()
+      .single();
 
-    if (credentialsError) {
-      console.error('Credentials fetch error:', credentialsError)
-      throw credentialsError
-    }
-    if (!credentials) {
-      console.error('No Facebook credentials found for user')
-      throw new Error('Facebook credentials not found')
+    if (credentialsError || !credentials) {
+      throw new Error('Facebook credentials not found');
     }
 
-    console.log('Making request to Facebook API')
-
-    // Make the API call to Facebook
-    const fbResponse = await fetch(
-      `https://graph.facebook.com/v19.0/act_${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{impressions,clicks,conversions}&access_token=${credentials.access_token}`
-    )
-
-    if (!fbResponse.ok) {
-      const error = await fbResponse.json()
-      console.error('Facebook API error:', error)
-      throw new Error(`Facebook API error: ${JSON.stringify(error)}`)
-    }
-
-    const campaigns = await fbResponse.json()
-    console.log('Successfully fetched campaigns:', campaigns)
+    // Make the request to Facebook's API
+    const facebookApiUrl = `https://graph.facebook.com/v18.0/act_${credentials.ad_account_id}/campaigns`;
+    const response = await fetch(`${facebookApiUrl}?access_token=${credentials.access_token}&fields=name,objective,status,lifetime_budget`);
     
-    return new Response(JSON.stringify(campaigns), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  } catch (error) {
-    console.error('Error in facebook-ads function:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
-  }
-})
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Facebook API error:', errorData);
+      throw new Error(`Facebook API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
 
+    const data = await response.json();
+    
+    return new Response(
+      JSON.stringify({ data }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
+    );
+
+  } catch (error) {
+    console.error('Error in facebook-ads function:', error);
+    
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      },
+    );
+  }
+});

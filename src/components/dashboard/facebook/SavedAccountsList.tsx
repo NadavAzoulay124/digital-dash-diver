@@ -26,7 +26,7 @@ export const SavedAccountsList = ({
         <div className="p-4 text-center text-gray-500">
           Loading accounts...
         </div>
-      ) : savedCredentials.length > 0 ? (
+      ) : savedCredentials?.length ? (
         <div className="space-y-2 p-4">
           {savedCredentials.map((cred) => (
             <Card 

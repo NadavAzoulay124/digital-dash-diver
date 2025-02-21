@@ -1,113 +1,138 @@
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
 import { FormErrors } from "./types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface NewAccountFormProps {
-  accountName: string;
-  adAccountId: string;
-  accessToken: string;
-  formErrors: FormErrors;
-  isSubmitting: boolean;
-  onSubmit: (e: React.FormEvent) => Promise<void>;
-  onCancel: () => void;
-  onAccountNameChange: (value: string) => void;
-  onAdAccountIdChange: (value: string) => void;
-  onAccessTokenChange: (value: string) => void;
+  onSuccess: () => void;
 }
 
-export const NewAccountForm = ({
-  accountName,
-  adAccountId,
-  accessToken,
-  formErrors,
-  isSubmitting,
-  onSubmit,
-  onCancel,
-  onAccountNameChange,
-  onAdAccountIdChange,
-  onAccessTokenChange,
-}: NewAccountFormProps) => {
+export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    accountName: "",
+    adAccountId: "",
+    accessToken: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const validateForm = () => {
+    const newErrors: FormErrors = {};
+    if (!formData.accountName.trim()) {
+      newErrors.accountName = "Account name is required";
+    }
+    if (!formData.adAccountId.trim()) {
+      newErrors.adAccountId = "Ad Account ID is required";
+    }
+    if (!formData.accessToken.trim()) {
+      newErrors.accessToken = "Access Token is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session) {
+        throw new Error("No active session");
+      }
+
+      const { error } = await supabase.from("facebook_ads_credentials").insert([
+        {
+          user_id: session.session.user.id,
+          account_name: formData.accountName,
+          ad_account_id: formData.adAccountId,
+          access_token: formData.accessToken,
+        },
+      ]);
+
+      if (error) {
+        if (error.code === "23505") {
+          toast({
+            title: "Error",
+            description: "This Facebook Ad Account is already connected",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Facebook account connected successfully",
+      });
+
+      setFormData({
+        accountName: "",
+        adAccountId: "",
+        accessToken: "",
+      });
+      onSuccess();
+    } catch (error) {
+      console.error("Error connecting account:", error);
+      toast({
+        title: "Error",
+        description: "Failed to connect Facebook account",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="accountName" className="block text-sm font-medium text-gray-700">
-          Account Name*
-        </label>
-        <div className="mt-1">
-          <Input
-            id="accountName"
-            value={accountName}
-            onChange={(e) => onAccountNameChange(e.target.value)}
-            placeholder="Enter a name for this account"
-            className={formErrors.accountName ? "border-red-500" : ""}
-          />
-          {formErrors.accountName && (
-            <p className="text-sm text-red-500 flex items-center mt-1">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              {formErrors.accountName}
-            </p>
-          )}
-        </div>
+        <Input
+          placeholder="Account Name"
+          value={formData.accountName}
+          onChange={(e) =>
+            setFormData({ ...formData, accountName: e.target.value })
+          }
+        />
+        {errors.accountName && (
+          <p className="text-sm text-destructive mt-1">{errors.accountName}</p>
+        )}
       </div>
-
       <div>
-        <label htmlFor="adAccountId" className="block text-sm font-medium text-gray-700">
-          Ad Account ID*
-        </label>
-        <div className="mt-1">
-          <Input
-            id="adAccountId"
-            value={adAccountId}
-            onChange={(e) => onAdAccountIdChange(e.target.value)}
-            placeholder="Enter your Ad Account ID"
-            className={formErrors.adAccountId ? "border-red-500" : ""}
-          />
-          {formErrors.adAccountId && (
-            <p className="text-sm text-red-500 flex items-center mt-1">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              {formErrors.adAccountId}
-            </p>
-          )}
-        </div>
+        <Input
+          placeholder="Ad Account ID"
+          value={formData.adAccountId}
+          onChange={(e) =>
+            setFormData({ ...formData, adAccountId: e.target.value })
+          }
+        />
+        {errors.adAccountId && (
+          <p className="text-sm text-destructive mt-1">{errors.adAccountId}</p>
+        )}
       </div>
-      
       <div>
-        <label htmlFor="accessToken" className="block text-sm font-medium text-gray-700">
-          Access Token*
-        </label>
-        <div className="mt-1">
-          <Input
-            id="accessToken"
-            type="password"
-            value={accessToken}
-            onChange={(e) => onAccessTokenChange(e.target.value)}
-            placeholder="Enter your Access Token"
-            className={formErrors.accessToken ? "border-red-500" : ""}
-          />
-          {formErrors.accessToken && (
-            <p className="text-sm text-red-500 flex items-center mt-1">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              {formErrors.accessToken}
-            </p>
-          )}
-        </div>
+        <Input
+          type="password"
+          placeholder="Access Token"
+          value={formData.accessToken}
+          onChange={(e) =>
+            setFormData({ ...formData, accessToken: e.target.value })
+          }
+        />
+        {errors.accessToken && (
+          <p className="text-sm text-destructive mt-1">{errors.accessToken}</p>
+        )}
       </div>
-
-      <div className="flex space-x-2">
-        <Button type="submit" className="flex-1" disabled={isSubmitting}>
-          {isSubmitting ? "Connecting..." : "Connect Account"}
-        </Button>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onCancel}
-          className="flex-1"
-        >
-          Cancel
-        </Button>
-      </div>
+      <Button type="submit" disabled={loading}>
+        {loading ? "Connecting..." : "Connect Account"}
+      </Button>
     </form>
   );
 };

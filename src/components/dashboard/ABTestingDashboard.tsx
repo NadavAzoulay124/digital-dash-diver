@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ABTest } from "./types";
-import { FacebookConnectForm } from "./FacebookConnectForm";
+import { FacebookConnectForm } from "./facebook/FacebookConnectForm";
 import { FacebookCampaigns } from "./FacebookCampaigns";
 import { CreateTestForm } from "./CreateTestForm";
 import { TestResults } from "./TestResults";

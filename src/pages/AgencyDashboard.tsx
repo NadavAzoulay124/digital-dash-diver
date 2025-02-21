@@ -1,6 +1,6 @@
 
 import { Routes, Route } from "react-router-dom";
-import { FacebookConnectForm } from "@/components/dashboard/FacebookConnectForm";
+import { FacebookConnectForm } from "@/components/dashboard/facebook/FacebookConnectForm";
 import { CampaignInsights } from "@/components/dashboard/CampaignInsights";
 import { CampaignChart } from "@/components/dashboard/CampaignChart";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";

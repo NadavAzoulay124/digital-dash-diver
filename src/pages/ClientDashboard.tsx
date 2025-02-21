@@ -40,9 +40,12 @@ const ClientDashboard = () => {
         return { data: [] };
       }
 
-      console.log('Fetching campaigns from edge function');
+      console.log('Fetching campaigns with credentials:', credentials);
       const response = await supabase.functions.invoke('facebook-ads', {
-        body: { }
+        body: { 
+          adAccountId: credentials.ad_account_id,
+          accessToken: credentials.access_token
+        }
       });
 
       if (response.error) {
@@ -90,7 +93,7 @@ const ClientDashboard = () => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
         
-        // Ensure we're working with numbers
+        // Parse numerical values from insights
         const spent = parseFloat(insights.spend || '0');
         const leads = parseInt(insights.conversions || '0', 10);
         const impressions = parseInt(insights.impressions || '0', 10);

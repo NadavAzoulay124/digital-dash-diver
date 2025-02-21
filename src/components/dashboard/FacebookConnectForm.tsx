@@ -20,6 +20,7 @@ export const FacebookConnectForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedCredentials, setSavedCredentials] = useState<SavedCredential[]>([]);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -47,6 +48,14 @@ export const FacebookConnectForm = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleAccountSelect = (credentialId: string) => {
+    setSelectedAccountId(credentialId);
+    toast({
+      title: "Account Selected",
+      description: "Facebook Ads account selected successfully",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +86,6 @@ export const FacebookConnectForm = () => {
         description: "Facebook Ads account connected successfully",
       });
       
-      // Clear form and refresh list
       setAdAccountId("");
       setAccessToken("");
       setShowNewForm(false);
@@ -109,6 +117,9 @@ export const FacebookConnectForm = () => {
         description: "Ad account removed successfully",
       });
 
+      if (selectedAccountId === credentialId) {
+        setSelectedAccountId(null);
+      }
       fetchSavedCredentials();
     } catch (error) {
       console.error('Error deleting credential:', error);
@@ -129,12 +140,17 @@ export const FacebookConnectForm = () => {
         </p>
       </div>
 
-      {/* List of saved credentials */}
       <ScrollArea className="h-[200px] rounded-md border">
         {savedCredentials.length > 0 ? (
           <div className="space-y-2 p-4">
             {savedCredentials.map((cred) => (
-              <Card key={cred.id} className="p-3 flex justify-between items-center">
+              <Card 
+                key={cred.id} 
+                className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${
+                  selectedAccountId === cred.id ? 'bg-primary/10 border-primary' : 'hover:bg-accent'
+                }`}
+                onClick={() => handleAccountSelect(cred.id)}
+              >
                 <div>
                   <p className="font-medium">Account ID: {cred.ad_account_id}</p>
                   <p className="text-sm text-gray-500">
@@ -144,7 +160,10 @@ export const FacebookConnectForm = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDelete(cred.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(cred.id);
+                  }}
                 >
                   <TrashIcon className="h-4 w-4" />
                 </Button>
@@ -158,7 +177,6 @@ export const FacebookConnectForm = () => {
         )}
       </ScrollArea>
 
-      {/* Add new account button */}
       {!showNewForm && (
         <Button 
           className="w-full"
@@ -170,7 +188,6 @@ export const FacebookConnectForm = () => {
         </Button>
       )}
 
-      {/* Form to add new account */}
       {showNewForm && (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

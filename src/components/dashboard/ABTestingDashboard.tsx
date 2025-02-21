@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface ABTest {
   id: string;
@@ -37,60 +39,77 @@ interface ABTest {
   };
 }
 
-const mockTests: ABTest[] = [
-  {
-    id: "1",
-    testType: "campaign",
-    campaignName: "Summer Sale",
-    variantA: "Original Banner",
-    variantB: "New Design",
-    startDate: "2024-02-15",
-    status: "running",
-    results: {
-      variantA: {
-        impressions: 5000,
-        clicks: 250,
-        conversions: 25,
-      },
-      variantB: {
-        impressions: 5000,
-        clicks: 300,
-        conversions: 35,
-      },
-    },
-  },
-  {
-    id: "2",
-    testType: "campaign",
-    campaignName: "Spring Collection",
-    variantA: "Product Focus",
-    variantB: "Lifestyle Focus",
-    startDate: "2024-02-10",
-    status: "completed",
-    results: {
-      variantA: {
-        impressions: 10000,
-        clicks: 450,
-        conversions: 40,
-      },
-      variantB: {
-        impressions: 10000,
-        clicks: 520,
-        conversions: 55,
-      },
-    },
-  },
-];
+interface FacebookCredentials {
+  ad_account_id: string;
+  access_token: string;
+}
 
 export const ABTestingDashboard = () => {
-  const [tests, setTests] = useState<ABTest[]>(mockTests);
+  const [tests, setTests] = useState<ABTest[]>([]);
   const [newTest, setNewTest] = useState({
     testType: "campaign" as ABTest["testType"],
     campaignName: "",
     variantA: "",
     variantB: "",
   });
+  const [credentials, setCredentials] = useState<FacebookCredentials>({
+    ad_account_id: "",
+    access_token: "",
+  });
   const { toast } = useToast();
+
+  const { data: facebookData, isLoading } = useQuery({
+    queryKey: ['facebook-campaigns'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('facebook-ads', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    enabled: true,
+  });
+
+  const handleConnectFacebook = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "Please sign in first",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('facebook_ads_credentials')
+        .upsert({
+          user_id: session.user.id,
+          ad_account_id: credentials.ad_account_id,
+          access_token: credentials.access_token,
+        });
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Facebook account connected successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const getTestTypeLabel = (type: ABTest["testType"]) => {
     switch (type) {
@@ -197,6 +216,93 @@ export const ABTestingDashboard = () => {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Connect Facebook Ads</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Ad Account ID</Label>
+                <Input
+                  placeholder="Enter your Facebook Ad Account ID"
+                  value={credentials.ad_account_id}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, ad_account_id: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Access Token</Label>
+                <Input
+                  type="password"
+                  placeholder="Enter your Facebook Access Token"
+                  value={credentials.access_token}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, access_token: e.target.value }))}
+                />
+              </div>
+            </div>
+            <Button onClick={handleConnectFacebook} className="w-full">
+              Connect Facebook Account
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">Loading Facebook campaigns...</div>
+          </CardContent>
+        </Card>
+      ) : facebookData ? (
+        <div className="space-y-6">
+          {facebookData.data.map((campaign: any) => (
+            <Card key={campaign.id}>
+              <CardHeader>
+                <CardTitle>
+                  <div className="flex items-center justify-between">
+                    <span>{campaign.name}</span>
+                    <Badge variant="outline">{campaign.objective}</Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Metric</TableHead>
+                      <TableHead>Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Status</TableCell>
+                      <TableCell>{campaign.status}</TableCell>
+                    </TableRow>
+                    {campaign.insights && campaign.insights.data[0] && (
+                      <>
+                        <TableRow>
+                          <TableCell>Impressions</TableCell>
+                          <TableCell>{campaign.insights.data[0].impressions}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Clicks</TableCell>
+                          <TableCell>{campaign.insights.data[0].clicks}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Conversions</TableCell>
+                          <TableCell>{campaign.insights.data[0].conversions}</TableCell>
+                        </TableRow>
+                      </>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Create New A/B Test</CardTitle>

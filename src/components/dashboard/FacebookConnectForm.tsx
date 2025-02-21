@@ -11,11 +11,13 @@ import { TrashIcon, PlusCircle } from "lucide-react";
 interface SavedCredential {
   id: string;
   ad_account_id: string;
+  account_name: string;
   created_at: string;
 }
 
 export const FacebookConnectForm = () => {
   const [adAccountId, setAdAccountId] = useState("");
+  const [accountName, setAccountName] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedCredentials, setSavedCredentials] = useState<SavedCredential[]>([]);
@@ -34,7 +36,7 @@ export const FacebookConnectForm = () => {
 
       const { data, error } = await supabase
         .from('facebook_ads_credentials')
-        .select('id, ad_account_id, created_at')
+        .select('id, ad_account_id, account_name, created_at')
         .eq('user_id', user.user.id)
         .order('created_at', { ascending: false });
 
@@ -73,6 +75,7 @@ export const FacebookConnectForm = () => {
         .from('facebook_ads_credentials')
         .insert({ 
           ad_account_id: adAccountId,
+          account_name: accountName,
           access_token: accessToken,
           user_id: userId
         });
@@ -87,6 +90,7 @@ export const FacebookConnectForm = () => {
       });
       
       setAdAccountId("");
+      setAccountName("");
       setAccessToken("");
       setShowNewForm(false);
       fetchSavedCredentials();
@@ -152,8 +156,9 @@ export const FacebookConnectForm = () => {
                 onClick={() => handleAccountSelect(cred.id)}
               >
                 <div>
-                  <p className="font-medium">Account ID: {cred.ad_account_id}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-medium">{cred.account_name}</p>
+                  <p className="text-sm text-gray-500">Account ID: {cred.ad_account_id}</p>
+                  <p className="text-xs text-gray-400">
                     Connected on {new Date(cred.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -190,6 +195,20 @@ export const FacebookConnectForm = () => {
 
       {showNewForm && (
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="accountName" className="block text-sm font-medium text-gray-700">
+              Account Name
+            </label>
+            <Input
+              id="accountName"
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              placeholder="Enter account name"
+              required
+              className="mt-1"
+            />
+          </div>
+
           <div>
             <label htmlFor="adAccountId" className="block text-sm font-medium text-gray-700">
               Ad Account ID
@@ -237,4 +256,3 @@ export const FacebookConnectForm = () => {
     </div>
   );
 };
-

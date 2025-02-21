@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { LeadManagement } from "@/components/dashboard/LeadManagement";
 import { ContractCreation } from "@/components/dashboard/ContractCreation";
+import { ContractsList } from "@/components/dashboard/contract/ContractsList";
 import { InvoiceManagement } from "@/components/dashboard/InvoiceManagement";
 import { ClientOnboarding } from "@/components/dashboard/ClientOnboarding";
 import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
@@ -26,8 +27,11 @@ export const DashboardView = ({ currentView }: DashboardViewProps) => {
             <CardDescription>Create and manage client contracts</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center p-8">
-              <ContractCreation />
+            <div className="space-y-8">
+              <div className="text-center">
+                <ContractCreation />
+              </div>
+              <ContractsList />
             </div>
           </CardContent>
         </Card>
@@ -57,3 +61,4 @@ export const DashboardView = ({ currentView }: DashboardViewProps) => {
       return <TaskBoard tasks={ignoredTasks} />;
   }
 };
+

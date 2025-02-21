@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -23,6 +24,10 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
     } else {
       setEndDate(date);
     }
+    onDateChange(startDate, endDate);
+  };
+
+  const handleApplyFilter = () => {
     onDateChange(startDate, endDate);
   };
 
@@ -61,6 +66,13 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
           />
         </PopoverContent>
       </Popover>
+
+      <Button 
+        onClick={handleApplyFilter}
+        className="ml-2"
+      >
+        Apply Filter
+      </Button>
     </div>
   );
 };

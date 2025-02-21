@@ -9,6 +9,8 @@ import { FinancialOverview } from "@/components/dashboard/FinancialOverview";
 import { ClientOnboarding } from "@/components/dashboard/ClientOnboarding";
 import { ContractCreation } from "@/components/dashboard/ContractCreation";
 import { ContractsList } from "@/components/dashboard/contract/ContractsList";
+import { TaskBoard } from "@/components/dashboard/TaskBoard";
+import { ignoredTasks } from "@/data/mockTasks";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -36,6 +38,10 @@ const AgencyDashboard = () => {
               <CampaignChart />
               <CampaignInsights />
             </div>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-primary mb-6">Employee Task Management</h2>
+              <TaskBoard tasks={ignoredTasks} />
+            </div>
             <div className="grid gap-6 md:grid-cols-2 bg-gray-50 p-6 rounded-lg shadow-sm">
               <ClientOnboarding />
               <div className="flex flex-col justify-center items-center space-y-4">
@@ -55,3 +61,4 @@ const AgencyDashboard = () => {
 };
 
 export default AgencyDashboard;
+

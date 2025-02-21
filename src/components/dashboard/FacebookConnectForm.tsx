@@ -41,6 +41,7 @@ export const FacebookConnectForm = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched credentials:', data); // Debug log
       setSavedCredentials(data || []);
     } catch (error) {
       console.error('Error fetching saved credentials:', error);
@@ -71,18 +72,22 @@ export const FacebookConnectForm = () => {
         throw new Error('User not authenticated');
       }
 
-      const result = await supabase
+      const { data, error } = await supabase
         .from('facebook_ads_credentials')
         .insert({ 
           ad_account_id: adAccountId,
           account_name: accountName,
           access_token: accessToken,
           user_id: userId
-        });
+        })
+        .select()
+        .single();
 
-      if (result.error) {
-        throw result.error;
+      if (error) {
+        throw error;
       }
+
+      console.log('Inserted credential:', data); // Debug log
 
       toast({
         title: "Success",
@@ -256,3 +261,4 @@ export const FacebookConnectForm = () => {
     </div>
   );
 };
+

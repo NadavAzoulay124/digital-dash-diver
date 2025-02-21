@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -266,6 +267,7 @@ export const ContractCreation = () => {
   const signaturePadRef = useRef<SignaturePad>(null);
   const [manualSignature, setManualSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [services, setServices] = useState<Service[]>([
     { id: "seo", name: "SEO Services", price: "", selected: false },
     { id: "meta", name: "PPC for Meta", price: "", selected: false },
@@ -273,6 +275,16 @@ export const ContractCreation = () => {
     { id: "social", name: "Social Pages Managing", price: "", selected: false },
     { id: "content", name: "Content Creation", price: "", selected: false },
   ]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user?.id || null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -322,6 +334,11 @@ export const ContractCreation = () => {
   };
 
   const validateForm = () => {
+    if (!userId) {
+      toast.error("You must be logged in to create contracts");
+      return false;
+    }
+
     if (!clientCompany) {
       toast.error("Please enter the client company name");
       return false;
@@ -370,6 +387,7 @@ export const ContractCreation = () => {
           total_value: totalValue,
           signature_data: signatureData,
           manual_signature: manualSignature,
+          created_by: userId!
         })
         .select()
         .single();

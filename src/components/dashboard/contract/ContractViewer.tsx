@@ -15,14 +15,20 @@ interface ContractViewerProps {
   contract: Contract & { contract_services: any[] };
   isOpen: boolean;
   onClose: () => void;
+  recipientEmail?: string; // New optional prop for pre-populated email
 }
 
-export const ContractViewer = ({ contract, isOpen, onClose }: ContractViewerProps) => {
-  const [recipientEmail, setRecipientEmail] = useState("");
+export const ContractViewer = ({ 
+  contract, 
+  isOpen, 
+  onClose,
+  recipientEmail = "" // Default to empty string if not provided
+}: ContractViewerProps) => {
+  const [email, setEmail] = useState(recipientEmail); // Initialize with provided email
   const [isSending, setIsSending] = useState(false);
 
   const handleSendEmail = async () => {
-    if (!recipientEmail) {
+    if (!email) {
       toast.error("Please enter a recipient email address");
       return;
     }
@@ -31,7 +37,7 @@ export const ContractViewer = ({ contract, isOpen, onClose }: ContractViewerProp
     try {
       const { error } = await supabase.functions.invoke("send-contract", {
         body: {
-          recipientEmail,
+          recipientEmail: email,
           contractDetails: {
             client_company: contract.client_company,
             total_value: contract.total_value,
@@ -46,7 +52,7 @@ export const ContractViewer = ({ contract, isOpen, onClose }: ContractViewerProp
       if (error) throw error;
 
       toast.success("Contract details sent successfully!");
-      setRecipientEmail("");
+      setEmail(""); // Clear the email field after successful send
     } catch (error) {
       console.error("Error sending contract email:", error);
       toast.error("Failed to send contract details. Please try again.");
@@ -54,6 +60,11 @@ export const ContractViewer = ({ contract, isOpen, onClose }: ContractViewerProp
       setIsSending(false);
     }
   };
+
+  // Reset email state when recipientEmail prop changes
+  useState(() => {
+    setEmail(recipientEmail);
+  }, [recipientEmail]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -96,13 +107,13 @@ export const ContractViewer = ({ contract, isOpen, onClose }: ContractViewerProp
                     id="recipientEmail"
                     type="email"
                     placeholder="Enter recipient email"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="flex-1"
                   />
                   <Button 
                     onClick={handleSendEmail}
-                    disabled={isSending || !recipientEmail}
+                    disabled={isSending || !email}
                   >
                     {isSending ? "Sending..." : "Send"}
                   </Button>

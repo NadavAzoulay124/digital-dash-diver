@@ -9,6 +9,8 @@ const corsHeaders = {
 interface RequestBody {
   adAccountId: string;
   accessToken: string;
+  since?: string;
+  until?: string;
 }
 
 serve(async (req) => {
@@ -23,6 +25,8 @@ serve(async (req) => {
     console.log('Received request with data:', {
       adAccountId: requestData.adAccountId,
       accessTokenLength: requestData.accessToken?.length || 0,
+      since: requestData.since,
+      until: requestData.until
     });
 
     if (!requestData.adAccountId || !requestData.accessToken) {
@@ -30,30 +34,31 @@ serve(async (req) => {
       throw new Error('Missing required credentials');
     }
 
-    const { adAccountId, accessToken } = requestData;
+    const { adAccountId, accessToken, since, until } = requestData;
 
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
 
-    // Get today's date
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    // Get today's date if no date range is provided
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Construct time range for insights
+    const timeRange = {
+      since: since || today,
+      until: until || today
+    };
+    
+    console.log('Using time range:', timeRange);
     
     // Fetch campaigns with insights
     const campaignsUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
     const insightsFields = 'impressions,clicks,spend,conversions';
     
-    // Explicitly set time_range for today only
-    const timeRange = {
-      since: today,
-      until: today
-    };
-    
-    // Add time_range parameter to get specifically today's data
+    // Add time_range parameter to insights query
     const campaignFields = `name,objective,status,insights.time_range(${JSON.stringify(timeRange)}){${insightsFields}}`;
     
     console.log('Fetching campaigns from URL:', campaignsUrl);
-    console.log('Using time range:', timeRange);
+    console.log('Using fields:', campaignFields);
 
     const response = await fetch(`${campaignsUrl}?fields=${campaignFields}`, {
       headers: {
@@ -73,7 +78,8 @@ serve(async (req) => {
       firstCampaign: data?.data?.[0] ? {
         name: data.data[0].name,
         hasInsights: !!data.data[0].insights
-      } : null
+      } : null,
+      timeRange
     });
 
     return new Response(JSON.stringify(data), {
@@ -91,3 +97,4 @@ serve(async (req) => {
     );
   }
 });
+

@@ -438,7 +438,7 @@ export const ContractCreation = () => {
           Create New Contract
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[1200px] h-[90vh]">
+      <DialogContent className="sm:max-w-[1200px] h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary">Create Professional Contract</DialogTitle>
           <DialogDescription className="text-gray-600">
@@ -446,8 +446,8 @@ export const ContractCreation = () => {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-2 gap-8 h-full">
-          <div className="space-y-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg shadow-sm">
+        <div className="grid grid-cols-2 gap-8 h-[calc(90vh-100px)] overflow-hidden">
+          <div className="space-y-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg shadow-sm overflow-y-auto">
             <div className="space-y-2">
               <Label htmlFor="company" className="text-sm font-semibold">Client Company Name</Label>
               <Input
@@ -497,7 +497,7 @@ export const ContractCreation = () => {
             </Button>
           </div>
 
-          <div className="border-l pl-6">
+          <div className="border-l pl-6 overflow-y-auto h-full">
             <ContractPreview
               selectedTemplate={selectedTemplate}
               templates={contractTemplates}

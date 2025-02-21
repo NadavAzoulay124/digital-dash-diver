@@ -6,10 +6,10 @@ export const MetricsOverview = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <MetricCard
-        title="Total Revenue"
+        title="Total Spent"
         value="$124.5K"
         change="+15.2%"
-        isPositive={true}
+        isPositive={false}
         icon={DollarSign}
       />
       <MetricCard

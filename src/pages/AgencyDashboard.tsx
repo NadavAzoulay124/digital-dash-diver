@@ -8,6 +8,7 @@ import { MetricsOverview } from "@/components/dashboard/MetricsOverview";
 import { FinancialOverview } from "@/components/dashboard/FinancialOverview";
 import { ClientOnboarding } from "@/components/dashboard/ClientOnboarding";
 import { ContractCreation } from "@/components/dashboard/ContractCreation";
+import { ContractsList } from "@/components/dashboard/contract/ContractsList";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -41,6 +42,9 @@ const AgencyDashboard = () => {
                 <h2 className="text-xl font-semibold text-primary">Contract Management</h2>
                 <ContractCreation />
               </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm">
+              <ContractsList />
             </div>
             <LeadsBoard />
           </div>

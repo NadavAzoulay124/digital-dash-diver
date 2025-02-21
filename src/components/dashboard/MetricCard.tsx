@@ -26,15 +26,17 @@ export const MetricCard = ({ title, value, change, isPositive, icon: Icon }: Met
           <Icon className="w-6 h-6 text-primary" />
         </div>
       </div>
-      <div className="mt-4">
-        <span className={cn(
-          "text-sm font-medium",
-          isPositive ? "text-success" : "text-red-500"
-        )}>
-          {change}
-        </span>
-        <span className="text-sm text-gray-500 ml-1">vs last month</span>
-      </div>
+      {change && (
+        <div className="mt-4">
+          <span className={cn(
+            "text-sm font-medium",
+            isPositive ? "text-success" : "text-red-500"
+          )}>
+            {isPositive ? '+' : ''}{change}
+          </span>
+          <span className="text-sm text-gray-500 ml-1">vs last month</span>
+        </div>
+      )}
     </Card>
   );
 };

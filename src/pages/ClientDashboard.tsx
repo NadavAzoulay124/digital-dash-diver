@@ -61,6 +61,7 @@ const ClientDashboard = () => {
   // Calculate aggregate metrics from campaign data
   const calculateMetrics = () => {
     if (!facebookData?.data || !Array.isArray(facebookData.data)) {
+      console.log('No campaign data available for metrics calculation');
       return {
         totalSpent: 0,
         totalLeads: 0,
@@ -73,28 +74,27 @@ const ClientDashboard = () => {
 
     // Calculate total metrics from all campaigns
     const metrics = facebookData.data.reduce((acc, campaign) => {
-      console.log('Processing campaign:', campaign.name);
-      
-      // Only include campaigns with valid insights data
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
-        // Parse spend as float and ensure it's a valid number
-        const spent = parseFloat(insights.spend || '0');
-        const leads = parseInt(insights.conversions || '0');
-        const impressions = parseInt(insights.impressions || '0');
+        
+        // Ensure we're working with numbers
+        const spent = typeof insights.spend === 'number' ? insights.spend : parseFloat(insights.spend || '0');
+        const leads = typeof insights.conversions === 'number' ? insights.conversions : parseInt(insights.conversions || '0', 10);
+        const impressions = typeof insights.impressions === 'number' ? insights.impressions : parseInt(insights.impressions || '0', 10);
         
         console.log(`Campaign ${campaign.name} metrics:`, {
           spent,
           leads,
           impressions,
-          rawSpend: insights.spend
+          rawSpend: insights.spend,
+          rawConversions: insights.conversions,
+          rawImpressions: insights.impressions
         });
         
-        // Accumulate metrics
         return {
-          totalSpent: (acc.totalSpent || 0) + (isNaN(spent) ? 0 : spent),
-          totalLeads: (acc.totalLeads || 0) + (isNaN(leads) ? 0 : leads),
-          impressions: (acc.impressions || 0) + (isNaN(impressions) ? 0 : impressions)
+          totalSpent: (acc.totalSpent || 0) + spent,
+          totalLeads: (acc.totalLeads || 0) + leads,
+          impressions: (acc.impressions || 0) + impressions
         };
       }
       return acc;
@@ -103,7 +103,7 @@ const ClientDashboard = () => {
     console.log('Final accumulated metrics:', metrics);
 
     // Calculate derived metrics
-    const roas = metrics.totalLeads > 0 ? (metrics.totalLeads * 100) / metrics.totalSpent : 0;
+    const roas = metrics.totalSpent > 0 ? (metrics.totalLeads * 100) / metrics.totalSpent : 0;
     const conversionRate = metrics.impressions > 0 ? (metrics.totalLeads / metrics.impressions) * 100 : 0;
 
     return {

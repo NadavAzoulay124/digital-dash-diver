@@ -25,22 +25,28 @@ const ClientDashboard = () => {
   const { data: facebookData, isError, isLoading } = useQuery({
     queryKey: ['facebook-campaigns'],
     queryFn: async () => {
-      // First check if we have Facebook credentials
-      const { data: credentials } = await supabase
+      const { data: credentials, error: credentialsError } = await supabase
         .from('facebook_ads_credentials')
         .select('*')
         .maybeSingle();
 
+      if (credentialsError) {
+        console.error('Error fetching credentials:', credentialsError);
+        throw new Error('Failed to fetch Facebook credentials');
+      }
+
       if (!credentials) {
+        console.log('No Facebook credentials found');
         return { data: [] };
       }
 
-      // If we have credentials, fetch the campaigns
+      console.log('Fetching campaigns from edge function');
       const response = await supabase.functions.invoke('facebook-ads', {
         body: { }
       });
 
       if (response.error) {
+        console.error('Edge function error:', response.error);
         throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
       }
 
@@ -49,6 +55,7 @@ const ClientDashboard = () => {
     },
     meta: {
       onError: (error: Error) => {
+        console.error('Query error:', error);
         toast({
           title: "Error fetching campaigns",
           description: error.message,
@@ -66,23 +73,29 @@ const ClientDashboard = () => {
         totalSpent: 0,
         totalLeads: 0,
         roas: 0,
-        conversionRate: 0
+        conversionRate: 0,
+        previousTotalSpent: 0,
+        previousTotalLeads: 0,
+        previousRoas: 0,
+        previousConversionRate: 0
       };
     }
 
-    console.log('Calculating metrics for campaigns:', facebookData.data);
+    let totalSpent = 0;
+    let totalLeads = 0;
+    let totalImpressions = 0;
 
-    // Calculate total metrics from all campaigns
-    const metrics = facebookData.data.reduce((acc, campaign) => {
+    // Calculate current period metrics
+    facebookData.data.forEach(campaign => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
         
         // Ensure we're working with numbers
-        const spent = typeof insights.spend === 'number' ? insights.spend : parseFloat(insights.spend || '0');
-        const leads = typeof insights.conversions === 'number' ? insights.conversions : parseInt(insights.conversions || '0', 10);
-        const impressions = typeof insights.impressions === 'number' ? insights.impressions : parseInt(insights.impressions || '0', 10);
+        const spent = parseFloat(insights.spend || '0');
+        const leads = parseInt(insights.conversions || '0', 10);
+        const impressions = parseInt(insights.impressions || '0', 10);
         
-        console.log(`Campaign ${campaign.name} metrics:`, {
+        console.log(`Processing campaign ${campaign.name}:`, {
           spent,
           leads,
           impressions,
@@ -91,30 +104,58 @@ const ClientDashboard = () => {
           rawImpressions: insights.impressions
         });
         
-        return {
-          totalSpent: (acc.totalSpent || 0) + spent,
-          totalLeads: (acc.totalLeads || 0) + leads,
-          impressions: (acc.impressions || 0) + impressions
-        };
+        totalSpent += spent;
+        totalLeads += leads;
+        totalImpressions += impressions;
       }
-      return acc;
-    }, { totalSpent: 0, totalLeads: 0, impressions: 0 });
+    });
 
-    console.log('Final accumulated metrics:', metrics);
+    // Calculate metrics for current period
+    const roas = totalSpent > 0 ? (totalLeads * 100) / totalSpent : 0; // Assuming $100 per lead
+    const conversionRate = totalImpressions > 0 ? (totalLeads / totalImpressions) * 100 : 0;
 
-    // Calculate derived metrics
-    const roas = metrics.totalSpent > 0 ? (metrics.totalLeads * 100) / metrics.totalSpent : 0;
-    const conversionRate = metrics.impressions > 0 ? (metrics.totalLeads / metrics.impressions) * 100 : 0;
+    // For demo purposes, simulate previous period metrics
+    // In a real application, you would fetch historical data
+    const previousTotalSpent = totalSpent * 0.9; // 10% less than current
+    const previousTotalLeads = totalLeads * 0.85; // 15% less than current
+    const previousRoas = previousTotalSpent > 0 ? (previousTotalLeads * 100) / previousTotalSpent : 0;
+    const previousConversionRate = conversionRate * 0.95; // 5% less than current
+
+    console.log('Final calculated metrics:', {
+      totalSpent,
+      totalLeads,
+      roas,
+      conversionRate,
+      previousTotalSpent,
+      previousTotalLeads,
+      previousRoas,
+      previousConversionRate
+    });
 
     return {
-      totalSpent: metrics.totalSpent,
-      totalLeads: metrics.totalLeads,
+      totalSpent,
+      totalLeads,
       roas,
-      conversionRate
+      conversionRate,
+      previousTotalSpent,
+      previousTotalLeads,
+      previousRoas,
+      previousConversionRate
     };
   };
 
   const metrics = calculateMetrics();
+
+  // Calculate percentage changes
+  const calculatePercentageChange = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const spentChange = calculatePercentageChange(metrics.totalSpent, metrics.previousTotalSpent);
+  const leadsChange = calculatePercentageChange(metrics.totalLeads, metrics.previousTotalLeads);
+  const roasChange = calculatePercentageChange(metrics.roas, metrics.previousRoas);
+  const conversionChange = calculatePercentageChange(metrics.conversionRate, metrics.previousConversionRate);
 
   return (
     <SidebarProvider>
@@ -130,30 +171,30 @@ const ClientDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <MetricCard
                 title="Total Spent"
-                value={`$${metrics.totalSpent.toFixed(2)}`}
-                change="+8.1%"
-                isPositive={true}
+                value={`$${metrics.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                change={`${spentChange.toFixed(1)}%`}
+                isPositive={spentChange >= 0}
                 icon={DollarSign}
               />
               <MetricCard
                 title="ROAS"
                 value={`${metrics.roas.toFixed(1)}x`}
-                change="+0.4x"
-                isPositive={true}
+                change={`${roasChange.toFixed(1)}%`}
+                isPositive={roasChange >= 0}
                 icon={TrendingUp}
               />
               <MetricCard
                 title="Total Leads"
                 value={metrics.totalLeads.toString()}
-                change="+12"
-                isPositive={true}
+                change={`${leadsChange.toFixed(1)}%`}
+                isPositive={leadsChange >= 0}
                 icon={Users}
               />
               <MetricCard
                 title="Conversion Rate"
                 value={`${metrics.conversionRate.toFixed(2)}%`}
-                change="+0.3%"
-                isPositive={true}
+                change={`${conversionChange.toFixed(1)}%`}
+                isPositive={conversionChange >= 0}
                 icon={Target}
               />
             </div>

@@ -44,6 +44,7 @@ const ClientDashboard = () => {
         throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
       }
 
+      console.log('Raw campaign data:', response.data);
       return response.data || { data: [] };
     },
     meta: {
@@ -68,25 +69,38 @@ const ClientDashboard = () => {
       };
     }
 
+    console.log('Calculating metrics for campaigns:', facebookData.data);
+
     // Calculate total metrics from all campaigns
     const metrics = facebookData.data.reduce((acc, campaign) => {
+      console.log('Processing campaign:', campaign.name);
+      
       // Only include campaigns with valid insights data
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
-        // Parse spend as float to ensure proper number addition
+        // Parse spend as float and ensure it's a valid number
         const spent = parseFloat(insights.spend || '0');
         const leads = parseInt(insights.conversions || '0');
         const impressions = parseInt(insights.impressions || '0');
         
+        console.log(`Campaign ${campaign.name} metrics:`, {
+          spent,
+          leads,
+          impressions,
+          rawSpend: insights.spend
+        });
+        
         // Accumulate metrics
         return {
-          totalSpent: acc.totalSpent + spent,
-          totalLeads: acc.totalLeads + leads,
-          impressions: acc.impressions + impressions
+          totalSpent: (acc.totalSpent || 0) + (isNaN(spent) ? 0 : spent),
+          totalLeads: (acc.totalLeads || 0) + (isNaN(leads) ? 0 : leads),
+          impressions: (acc.impressions || 0) + (isNaN(impressions) ? 0 : impressions)
         };
       }
       return acc;
     }, { totalSpent: 0, totalLeads: 0, impressions: 0 });
+
+    console.log('Final accumulated metrics:', metrics);
 
     // Calculate derived metrics
     const roas = metrics.totalLeads > 0 ? (metrics.totalLeads * 100) / metrics.totalSpent : 0;
@@ -190,3 +204,4 @@ const ClientDashboard = () => {
 };
 
 export default ClientDashboard;
+

@@ -31,9 +31,9 @@ serve(async (req) => {
 
     console.log('Fetching campaigns with credentials:', credentials.ad_account_id)
 
-    // Fetch active campaigns
+    // Fetch active campaigns with updated date_preset
     const campaignsResponse = await fetch(
-      `https://graph.facebook.com/v19.0/${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{spend,impressions,clicks,conversions}&date_preset=last_30d`,
+      `https://graph.facebook.com/v19.0/${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{spend,impressions,clicks,conversions}&date_preset=this_month`,
       {
         headers: {
           Authorization: `Bearer ${credentials.access_token}`,
@@ -48,21 +48,31 @@ serve(async (req) => {
     }
 
     const campaigns = await campaignsResponse.json()
-    console.log('Fetched campaigns:', campaigns)
+    console.log('Raw campaigns data from Facebook:', campaigns)
 
     // Process campaigns to ensure proper number formatting for spend
-    const processedCampaigns = campaigns.data.map(campaign => ({
-      ...campaign,
-      insights: campaign.insights ? {
-        data: campaign.insights.data.map(insight => ({
-          ...insight,
-          spend: parseFloat(insight.spend || '0').toFixed(2), // Ensure spend is formatted as number with 2 decimal places
-          impressions: parseInt(insight.impressions || '0'),
-          clicks: parseInt(insight.clicks || '0'),
-          conversions: parseInt(insight.conversions || '0')
-        }))
-      } : null
-    }))
+    const processedCampaigns = campaigns.data.map(campaign => {
+      console.log(`Processing campaign ${campaign.name}:`, campaign)
+      return {
+        ...campaign,
+        insights: campaign.insights ? {
+          data: campaign.insights.data.map(insight => {
+            console.log(`Raw insight data for campaign ${campaign.name}:`, insight)
+            const spend = parseFloat(insight.spend || '0')
+            console.log(`Parsed spend for campaign ${campaign.name}:`, spend)
+            return {
+              ...insight,
+              spend: spend.toFixed(2), // Ensure spend is formatted as number with 2 decimal places
+              impressions: parseInt(insight.impressions || '0'),
+              clicks: parseInt(insight.clicks || '0'),
+              conversions: parseInt(insight.conversions || '0')
+            }
+          })
+        } : null
+      }
+    })
+
+    console.log('Processed campaigns data:', processedCampaigns)
 
     return new Response(
       JSON.stringify({ data: processedCampaigns }),
@@ -107,3 +117,4 @@ const createClient = (supabaseUrl: string, supabaseKey: string) => {
     })
   }
 }
+

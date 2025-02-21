@@ -6,21 +6,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-console.log("Loading Facebook Ads Edge Function")
-
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Get credentials from database
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
+    // Get credentials from the database
     const { data: credentials, error: credentialsError } = await supabaseClient
       .from('facebook_ads_credentials')
       .select('*')
@@ -45,18 +43,19 @@ serve(async (req) => {
     const verifyData = await verifyResponse.json()
     console.log('Available ad accounts:', verifyData)
 
-    // Check if the ad account exists in the list
+    // Check if the ad account exists in the list - without act_ prefix
     const validAccount = verifyData.data.some(account => 
-      account.id === `act_${credentials.ad_account_id}` || account.id === credentials.ad_account_id
+      account.id === credentials.ad_account_id || 
+      account.id === credentials.ad_account_id.replace('act_', '')
     )
 
     if (!validAccount) {
       throw new Error(`Ad account ${credentials.ad_account_id} is not accessible with current credentials`)
     }
 
-    // If verification passed, fetch campaign data
+    // If verification passed, fetch campaign data - using the ID without act_ prefix
     const campaignsResponse = await fetch(
-      `https://graph.facebook.com/v19.0/act_${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{spend,impressions,clicks,conversions}&date_preset=this_month`,
+      `https://graph.facebook.com/v19.0/${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{spend,impressions,clicks,conversions}&date_preset=this_month`,
       {
         headers: {
           Authorization: `Bearer ${credentials.access_token}`,
@@ -80,69 +79,36 @@ serve(async (req) => {
 
     // Process campaigns to ensure proper number formatting for spend
     const processedCampaigns = campaigns.data.map(campaign => {
-      console.log(`Processing campaign ${campaign.name}:`, campaign)
-      return {
-        ...campaign,
-        insights: campaign.insights ? {
-          data: campaign.insights.data.map(insight => {
-            console.log(`Raw insight data for campaign ${campaign.name}:`, insight)
-            const spend = parseFloat(insight.spend || '0')
-            console.log(`Parsed spend for campaign ${campaign.name}:`, spend)
-            return {
-              ...insight,
-              spend: spend.toFixed(2), // Ensure spend is formatted as number with 2 decimal places
-              impressions: parseInt(insight.impressions || '0'),
-              clicks: parseInt(insight.clicks || '0'),
-              conversions: parseInt(insight.conversions || '0')
-            }
-          })
-        } : null
+      if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
+        console.log(`Processing campaign ${campaign.name}:`, campaign)
       }
+      return campaign
     })
-
-    console.log('Processed campaigns data:', processedCampaigns)
 
     return new Response(
       JSON.stringify({ data: processedCampaigns }),
       { 
-        headers: { 
+        headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
+          'Content-Type': 'application/json',
+        },
       }
     )
+
   } catch (error) {
     console.error('Error in facebook-ads function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      }),
       { 
         status: 500,
-        headers: { 
+        headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   }
 })
-
-// Helper to create Supabase client (This needs to be here since edge functions can't import from src/)
-const createClient = (supabaseUrl: string, supabaseKey: string) => {
-  return {
-    from: (table: string) => ({
-      select: (query: string) => ({
-        maybeSingle: async () => {
-          const response = await fetch(`${supabaseUrl}/rest/v1/${table}?select=${query}`, {
-            headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`
-            }
-          })
-          const data = await response.json()
-          return { data: data[0], error: null }
-        }
-      })
-    })
-  }
-}
 

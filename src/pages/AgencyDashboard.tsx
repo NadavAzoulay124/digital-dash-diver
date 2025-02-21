@@ -25,7 +25,7 @@ const AgencyDashboard = () => {
       <Route
         index
         element={
-          <div className="space-y-6">
+          <div className="space-y-8 p-6">
             <div className="grid gap-6 md:grid-cols-2">
               <MetricsOverview />
               <FinancialOverview data={mockFinancialData} />
@@ -35,9 +35,12 @@ const AgencyDashboard = () => {
               <CampaignChart />
               <CampaignInsights />
             </div>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 bg-gray-50 p-6 rounded-lg shadow-sm">
               <ClientOnboarding />
-              <ContractCreation />
+              <div className="flex flex-col justify-center items-center space-y-4">
+                <h2 className="text-xl font-semibold text-primary">Contract Management</h2>
+                <ContractCreation />
+              </div>
             </div>
             <LeadsBoard />
           </div>
@@ -48,4 +51,3 @@ const AgencyDashboard = () => {
 };
 
 export default AgencyDashboard;
-

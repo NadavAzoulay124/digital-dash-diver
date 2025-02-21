@@ -68,31 +68,35 @@ const ClientDashboard = () => {
       };
     }
 
+    // Calculate total metrics from all campaigns
     const metrics = facebookData.data.reduce((acc, campaign) => {
+      // Only include campaigns with valid insights data
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
+        // Parse spend as float to ensure proper number addition
         const spent = parseFloat(insights.spend || '0');
         const leads = parseInt(insights.conversions || '0');
         const impressions = parseInt(insights.impressions || '0');
         
+        // Accumulate metrics
         return {
           totalSpent: acc.totalSpent + spent,
           totalLeads: acc.totalLeads + leads,
-          roas: (acc.totalLeads + leads) > 0 ? 
-            ((acc.totalLeads + leads) * 100) / (acc.totalSpent + spent || 1) : 0, // Assuming $100 value per lead
-          conversionRate: (acc.impressions + impressions) > 0 ? 
-            ((acc.totalLeads + leads) / (acc.impressions + impressions)) * 100 : 0,
           impressions: acc.impressions + impressions
         };
       }
       return acc;
-    }, { totalSpent: 0, totalLeads: 0, roas: 0, conversionRate: 0, impressions: 0 });
+    }, { totalSpent: 0, totalLeads: 0, impressions: 0 });
+
+    // Calculate derived metrics
+    const roas = metrics.totalLeads > 0 ? (metrics.totalLeads * 100) / metrics.totalSpent : 0;
+    const conversionRate = metrics.impressions > 0 ? (metrics.totalLeads / metrics.impressions) * 100 : 0;
 
     return {
       totalSpent: metrics.totalSpent,
       totalLeads: metrics.totalLeads,
-      roas: metrics.roas,
-      conversionRate: metrics.conversionRate
+      roas,
+      conversionRate
     };
   };
 

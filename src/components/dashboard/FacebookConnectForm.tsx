@@ -1,90 +1,94 @@
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { FacebookCredentials } from "./types";
+import { useToast } from "@/components/ui/use-toast";
+import type { FacebookCredentials } from "./types";
 
-interface FacebookConnectFormProps {
-  credentials: FacebookCredentials;
-  setCredentials: (credentials: FacebookCredentials) => void;
-}
-
-export const FacebookConnectForm = ({ credentials, setCredentials }: FacebookConnectFormProps) => {
+export const FacebookConnectForm = () => {
+  const [credentials, setCredentials] = useState<FacebookCredentials>({
+    ad_account_id: '',
+    access_token: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  const handleConnectFacebook = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to connect your Facebook account",
-          variant: "destructive",
-        });
-        navigate("/auth");
-        return;
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('You must be logged in to connect Facebook Ads');
       }
 
-      const { error } = await supabase
+      const { error: supabaseError } = await supabase
         .from('facebook_ads_credentials')
         .upsert({
-          user_id: session.user.id,
+          user_id: user.id,
           ad_account_id: credentials.ad_account_id,
           access_token: credentials.access_token,
         });
-      
-      if (error) throw error;
+
+      if (supabaseError) throw supabaseError;
 
       toast({
         title: "Success",
-        description: "Facebook account connected successfully",
+        description: "Facebook Ads credentials saved successfully!",
       });
-    } catch (error) {
-      console.error('Error connecting Facebook account:', error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while saving credentials');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Connect Facebook Ads</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Ad Account ID</Label>
-              <Input
-                placeholder="Enter your Facebook Ad Account ID"
-                value={credentials.ad_account_id}
-                onChange={(e) => setCredentials({ ...credentials, ad_account_id: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Access Token</Label>
-              <Input
-                type="password"
-                placeholder="Enter your Facebook Access Token"
-                value={credentials.access_token}
-                onChange={(e) => setCredentials({ ...credentials, access_token: e.target.value })}
-              />
-            </div>
-          </div>
-          <Button onClick={handleConnectFacebook} className="w-full">
-            Connect Facebook Account
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Input
+          type="text"
+          placeholder="Ad Account ID"
+          value={credentials.ad_account_id}
+          onChange={(e) =>
+            setCredentials((prev) => ({
+              ...prev,
+              ad_account_id: e.target.value,
+            }))
+          }
+          required
+        />
+        <Input
+          type="password"
+          placeholder="Access Token"
+          value={credentials.access_token}
+          onChange={(e) =>
+            setCredentials((prev) => ({
+              ...prev,
+              access_token: e.target.value,
+            }))
+          }
+          required
+        />
+      </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Connecting...' : 'Connect Facebook Ads'}
+      </Button>
+    </form>
   );
 };

@@ -9,9 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface DateRangeFilterProps {
   onDateChange: (startDate: Date | undefined, endDate: Date | undefined) => void;
@@ -107,7 +105,6 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
   const handleDateSelect = (date: Date | undefined, isStart: boolean) => {
     if (isStart) {
       setStartDate(date);
-      // If end date is before start date, reset it
       if (endDate && date && endDate < date) {
         setEndDate(undefined);
       }
@@ -128,6 +125,11 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
       return format(startDate, "PPP");
     }
     return `${format(startDate, "PP")} - ${format(endDate, "PP")}`;
+  };
+
+  const isDateInRange = (date: Date) => {
+    if (!startDate || !endDate) return false;
+    return isWithinInterval(date, { start: startDate, end: endDate });
   };
 
   return (
@@ -160,12 +162,20 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
                 selected={startDate}
                 onSelect={(date) => handleDateSelect(date, true)}
                 initialFocus
+                modifiers={{ selected: isDateInRange }}
+                modifiersClassNames={{
+                  selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                }}
               />
               <Calendar
                 mode="single"
                 selected={endDate}
                 onSelect={(date) => handleDateSelect(date, false)}
                 disabled={(date) => startDate ? date < startDate : false}
+                modifiers={{ selected: isDateInRange }}
+                modifiersClassNames={{
+                  selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                }}
               />
               <div className="flex justify-end gap-2">
                 <Button

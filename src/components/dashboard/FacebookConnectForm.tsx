@@ -19,7 +19,6 @@ export const FacebookConnectForm = () => {
       const { error } = await supabase
         .from('facebook_ads_credentials')
         .upsert({ 
-          id: 1, // Using a fixed ID since we only need one set of credentials
           ad_account_id: adAccountId,
           access_token: accessToken,
           user_id: (await supabase.auth.getUser()).data.user?.id

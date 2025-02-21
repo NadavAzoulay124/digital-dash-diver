@@ -1,9 +1,15 @@
 
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Contract } from "./types";
 import { formatDistanceToNow } from "date-fns";
-import { FileSignature } from "lucide-react";
+import { FileSignature, Mail } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContractViewerProps {
   contract: Contract & { contract_services: any[] };
@@ -12,6 +18,43 @@ interface ContractViewerProps {
 }
 
 export const ContractViewer = ({ contract, isOpen, onClose }: ContractViewerProps) => {
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
+  const handleSendEmail = async () => {
+    if (!recipientEmail) {
+      toast.error("Please enter a recipient email address");
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-contract", {
+        body: {
+          recipientEmail,
+          contractDetails: {
+            client_company: contract.client_company,
+            total_value: contract.total_value,
+            services: contract.contract_services.map(service => ({
+              service_name: service.service_name,
+              price: service.price,
+            })),
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Contract details sent successfully!");
+      setRecipientEmail("");
+    } catch (error) {
+      console.error("Error sending contract email:", error);
+      toast.error("Failed to send contract details. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl h-[80vh]">
@@ -37,6 +80,33 @@ export const ContractViewer = ({ contract, isOpen, onClose }: ContractViewerProp
               </h2>
               <div className="text-sm text-gray-500">
                 Created {formatDistanceToNow(new Date(contract.created_at), { addSuffix: true })}
+              </div>
+            </div>
+
+            {/* Email Section */}
+            <div className="bg-muted/50 p-4 rounded-lg space-y-4">
+              <div className="flex items-center gap-2">
+                <Mail className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Send Contract Details</h3>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="recipientEmail">Recipient Email</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="recipientEmail"
+                    type="email"
+                    placeholder="Enter recipient email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={handleSendEmail}
+                    disabled={isSending || !recipientEmail}
+                  >
+                    {isSending ? "Sending..." : "Send"}
+                  </Button>
+                </div>
               </div>
             </div>
 

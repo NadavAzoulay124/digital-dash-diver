@@ -3,3 +3,6 @@ project_id = "hxhqzycgpdjzjrowyjxn"
 
 [functions.facebook-ads]
 verify_jwt = true
+
+[functions.send-contract]
+verify_jwt = true

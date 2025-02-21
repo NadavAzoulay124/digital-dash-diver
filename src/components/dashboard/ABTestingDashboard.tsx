@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { ABTest, FacebookCredentials } from "./types";
+import { ABTest } from "./types";
 import { FacebookConnectForm } from "./FacebookConnectForm";
 import { FacebookCampaigns } from "./FacebookCampaigns";
 import { CreateTestForm } from "./CreateTestForm";
@@ -17,10 +17,6 @@ export const ABTestingDashboard = () => {
     campaignName: "",
     variantA: "",
     variantB: "",
-  });
-  const [credentials, setCredentials] = useState<FacebookCredentials>({
-    ad_account_id: "",
-    access_token: "",
   });
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -112,10 +108,7 @@ export const ABTestingDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <FacebookConnectForm 
-        credentials={credentials}
-        setCredentials={setCredentials}
-      />
+      <FacebookConnectForm />
 
       {isLoading ? (
         <div className="text-center">Loading Facebook campaigns...</div>

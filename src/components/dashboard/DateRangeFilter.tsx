@@ -8,24 +8,20 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, subMonths } from "date-fns";
+import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 interface DateRangeFilterProps {
   onDateChange: (startDate: Date | undefined, endDate: Date | undefined) => void;
 }
 
-type DateRange = {
-  from?: Date;
-  to?: Date;
-};
-
 type PresetOption = {
   label: string;
-  getValue: () => DateRange;
+  getValue: () => { from: Date; to: Date };
 };
 
 export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
-  const [date, setDate] = useState<DateRange>({});
+  const [date, setDate] = useState<DateRange | undefined>();
   const [isOpen, setIsOpen] = useState(false);
 
   // Get the maximum allowed start date (37 months ago)
@@ -90,24 +86,22 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
     setIsOpen(false);
   };
 
-  const selectRange = (range: DateRange) => {
+  const selectRange = (range: DateRange | undefined) => {
     setDate(range);
     // Only trigger the onDateChange if both from and to are selected
-    if (range.from && range.to) {
+    if (range?.from && range?.to) {
       onDateChange(range.from, range.to);
       setIsOpen(false);
     }
   };
 
-  const getPresetLabel = (range: DateRange): string => {
-    if (!range.from || !range.to) return "Select dates";
+  const getPresetLabel = (range: DateRange | undefined): string => {
+    if (!range?.from || !range?.to) return "Select dates";
 
     // Check if the range matches any preset
     for (const preset of presets) {
       const presetRange = preset.getValue();
       if (
-        presetRange.from &&
-        presetRange.to &&
         format(presetRange.from, "yyyy-MM-dd") === format(range.from, "yyyy-MM-dd") &&
         format(presetRange.to, "yyyy-MM-dd") === format(range.to, "yyyy-MM-dd")
       ) {
@@ -148,7 +142,7 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
             <Calendar
               initialFocus
               mode="range"
-              defaultMonth={date.from}
+              defaultMonth={date?.from}
               selected={date}
               onSelect={selectRange}
               numberOfMonths={2}

@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       .select('*')
       .single();
 
-    if (credError || !credentials) {
+    if (credError) {
       console.error('Error fetching credentials:', credError);
       return new Response(
         JSON.stringify({ error: 'No Facebook credentials found' }), 
@@ -33,11 +33,19 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (!credentials) {
+      console.log('No Facebook credentials found for user');
+      return new Response(
+        JSON.stringify({ data: [] }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Fetching campaigns for account:', credentials.ad_account_id);
 
     // Call Facebook Marketing API
     const fbResponse = await fetch(
-      `https://graph.facebook.com/v19.0/act_${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{impressions,clicks,conversions}&access_token=${credentials.access_token}`
+      `https://graph.facebook.com/v19.0/act_${credentials.ad_account_id}/campaigns?fields=name,objective,status,insights{impressions,clicks,conversions,spend}&access_token=${credentials.access_token}`
     );
 
     if (!fbResponse.ok) {
@@ -49,11 +57,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    const data = await fbResponse.json();
-    console.log('Successfully fetched Facebook campaigns:', data);
+    const fbData = await fbResponse.json();
+    console.log('Successfully fetched Facebook campaigns:', fbData);
 
     return new Response(
-      JSON.stringify({ data }), 
+      JSON.stringify({ data: fbData.data || [] }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

@@ -9,6 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contract_services: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          id: string
+          price: number
+          service_id: string
+          service_name: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          price: number
+          service_id: string
+          service_name: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          price?: number
+          service_id?: string
+          service_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_services_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          client_company: string
+          company_logo: string | null
+          created_at: string
+          created_by: string
+          id: string
+          manual_signature: boolean | null
+          signature_data: string | null
+          status: Database["public"]["Enums"]["contract_status"] | null
+          template_id: string
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          client_company: string
+          company_logo?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          manual_signature?: boolean | null
+          signature_data?: string | null
+          status?: Database["public"]["Enums"]["contract_status"] | null
+          template_id: string
+          total_value: number
+          updated_at?: string
+        }
+        Update: {
+          client_company?: string
+          company_logo?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          manual_signature?: boolean | null
+          signature_data?: string | null
+          status?: Database["public"]["Enums"]["contract_status"] | null
+          template_id?: string
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       facebook_ads_credentials: {
         Row: {
           access_token: string
@@ -65,7 +142,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      contract_status: "draft" | "pending" | "signed" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never

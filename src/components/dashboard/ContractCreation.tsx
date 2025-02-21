@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +18,7 @@ import { LogoUploader } from "./contract/LogoUploader";
 import { SignaturePad as SignaturePadComponent } from "./contract/SignaturePad";
 import { ContractPreview } from "./contract/ContractPreview";
 import { Service, ContractTemplate } from "./contract/types";
+import { supabase } from "@/integrations/supabase/client";
 
 const contractTemplates: ContractTemplate[] = [
   {
@@ -265,6 +265,7 @@ export const ContractCreation = () => {
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const signaturePadRef = useRef<SignaturePad>(null);
   const [manualSignature, setManualSignature] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [services, setServices] = useState<Service[]>([
     { id: "seo", name: "SEO Services", price: "", selected: false },
     { id: "meta", name: "PPC for Meta", price: "", selected: false },
@@ -320,37 +321,96 @@ export const ContractCreation = () => {
     }
   };
 
-  const handleSendContract = () => {
-    const selectedServices = services.filter(service => service.selected);
-    
+  const validateForm = () => {
     if (!clientCompany) {
       toast.error("Please enter the client company name");
-      return;
+      return false;
     }
 
+    const selectedServices = services.filter(service => service.selected);
+    
     if (selectedServices.length === 0) {
       toast.error("Please select at least one service");
-      return;
+      return false;
     }
 
     if (selectedServices.some(service => !service.price)) {
       toast.error("Please set prices for all selected services");
-      return;
+      return false;
     }
 
-    if (!manualSignature && !signaturePadRef.current?.isEmpty()) {
-      const signatureData = signaturePadRef.current?.getTrimmedCanvas().toDataURL();
-      console.log('Signature data:', signatureData);
+    if (!selectedTemplate) {
+      toast.error("Please select a contract template");
+      return false;
     }
 
-    toast.success(`Contract ${manualSignature ? 'sent for manual signature' : 'created'} for ${clientCompany}`);
-    console.log({
-      clientCompany,
-      services: selectedServices,
-      totalValue: selectedServices.reduce((sum, service) => sum + Number(service.price), 0),
-      companyLogo,
-      manualSignature,
-    });
+    return true;
+  };
+
+  const handleSendContract = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    const selectedServices = services.filter(service => service.selected);
+    const totalValue = selectedServices.reduce((sum, service) => sum + Number(service.price), 0);
+    
+    try {
+      let signatureData = null;
+      if (!manualSignature && signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
+        signatureData = signaturePadRef.current.getTrimmedCanvas().toDataURL();
+      }
+
+      const { data: contract, error: contractError } = await supabase
+        .from('contracts')
+        .insert({
+          client_company: clientCompany,
+          template_id: selectedTemplate,
+          company_logo: companyLogo,
+          status: manualSignature ? 'pending' : 'signed',
+          total_value: totalValue,
+          signature_data: signatureData,
+          manual_signature: manualSignature,
+        })
+        .select()
+        .single();
+
+      if (contractError) throw contractError;
+
+      const contractServices = selectedServices.map(service => ({
+        contract_id: contract.id,
+        service_id: service.id,
+        service_name: service.name,
+        price: Number(service.price),
+      }));
+
+      const { error: servicesError } = await supabase
+        .from('contract_services')
+        .insert(contractServices);
+
+      if (servicesError) throw servicesError;
+
+      toast.success(
+        manualSignature 
+          ? 'Contract sent for manual signature' 
+          : 'Contract created successfully'
+      );
+
+      // Reset form
+      setClientCompany("");
+      setSelectedTemplate("");
+      setCompanyLogo(null);
+      setManualSignature(false);
+      if (signaturePadRef.current) {
+        signaturePadRef.current.clear();
+      }
+      setServices(services.map(service => ({ ...service, selected: false, price: "" })));
+
+    } catch (error) {
+      console.error('Error creating contract:', error);
+      toast.error('Failed to create contract. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -408,8 +468,14 @@ export const ContractCreation = () => {
             <Button 
               onClick={handleSendContract} 
               className="w-full bg-primary hover:bg-primary-hover text-white font-semibold"
+              disabled={isSubmitting}
             >
-              {manualSignature ? 'Send for Manual Signature' : 'Generate & Send Contract'}
+              {isSubmitting 
+                ? 'Creating Contract...' 
+                : manualSignature 
+                  ? 'Send for Manual Signature' 
+                  : 'Generate & Send Contract'
+              }
             </Button>
           </div>
 

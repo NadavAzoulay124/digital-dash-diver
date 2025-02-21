@@ -35,17 +35,25 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
 
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's date
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
     
     // Fetch campaigns with insights
     const campaignsUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
     const insightsFields = 'impressions,clicks,spend,conversions';
-    // Add time_range to get today's data only
-    const campaignFields = `name,objective,status,insights{${insightsFields}}&date_preset=today`;
+    
+    // Explicitly set time_range for today only
+    const timeRange = {
+      since: today,
+      until: today
+    };
+    
+    // Add time_range parameter to get specifically today's data
+    const campaignFields = `name,objective,status,insights.time_range(${JSON.stringify(timeRange)}){${insightsFields}}`;
     
     console.log('Fetching campaigns from URL:', campaignsUrl);
-    console.log('Using date range:', { today });
+    console.log('Using time range:', timeRange);
 
     const response = await fetch(`${campaignsUrl}?fields=${campaignFields}`, {
       headers: {

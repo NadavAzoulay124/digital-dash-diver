@@ -140,14 +140,14 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
           {getDateRangeText()}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800" align="start">
         <div className="grid grid-cols-2 gap-2">
-          <div className="p-3 space-y-3">
+          <div className="p-3 space-y-3 bg-white dark:bg-gray-900">
             <div className="space-y-3">
               {presets.map((preset) => (
                 <div
                   key={preset.label}
-                  className="cursor-pointer rounded-lg p-2 hover:bg-muted"
+                  className="cursor-pointer rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => handlePresetChange(preset)}
                 >
                   {preset.label}
@@ -155,7 +155,7 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
               ))}
             </div>
           </div>
-          <div className="border-l p-3">
+          <div className="border-l p-3 bg-white dark:bg-gray-900">
             <div className="space-y-3">
               <Calendar
                 mode="single"
@@ -164,8 +164,9 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
                 initialFocus
                 modifiers={{ selected: isDateInRange }}
                 modifiersClassNames={{
-                  selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                  selected: "bg-blue-600 text-white hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white"
                 }}
+                className="bg-white dark:bg-gray-900"
               />
               <Calendar
                 mode="single"
@@ -174,8 +175,9 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
                 disabled={(date) => startDate ? date < startDate : false}
                 modifiers={{ selected: isDateInRange }}
                 modifiersClassNames={{
-                  selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                  selected: "bg-blue-600 text-white hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white"
                 }}
+                className="bg-white dark:bg-gray-900"
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -198,3 +200,4 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
     </Popover>
   );
 };
+

@@ -9,6 +9,8 @@ import { FacebookConnectForm } from "./FacebookConnectForm";
 import { FacebookCampaigns } from "./FacebookCampaigns";
 import { CreateTestForm } from "./CreateTestForm";
 import { TestResults } from "./TestResults";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const ABTestingDashboard = () => {
   const [tests, setTests] = useState<ABTest[]>([]);
@@ -38,12 +40,21 @@ export const ABTestingDashboard = () => {
     }
   };
 
-  const { data: facebookData, isLoading } = useQuery({
+  const { data: facebookData, isLoading, error } = useQuery({
     queryKey: ['facebook-campaigns'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('Not authenticated');
+      }
+
+      const { data: hasCredentials } = await supabase
+        .from('facebook_ads_credentials')
+        .select('id')
+        .single();
+
+      if (!hasCredentials) {
+        return null;
       }
 
       const response = await supabase.functions.invoke('facebook-ads', {
@@ -55,13 +66,17 @@ export const ABTestingDashboard = () => {
       if (response.error) throw response.error;
       return response.data;
     },
-    enabled: true,
-    retry: 1,
     meta: {
       onError: (error: Error) => {
         console.error('Error fetching Facebook campaigns:', error);
         if (error.message === 'Not authenticated') {
           navigate("/auth");
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to fetch Facebook campaigns. Please check your credentials.",
+            variant: "destructive",
+          });
         }
       }
     }
@@ -112,9 +127,23 @@ export const ABTestingDashboard = () => {
 
       {isLoading ? (
         <div className="text-center">Loading Facebook campaigns...</div>
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Error loading Facebook campaigns. Please check your credentials and try again.
+          </AlertDescription>
+        </Alert>
       ) : facebookData ? (
         <FacebookCampaigns campaigns={facebookData.data} />
-      ) : null}
+      ) : (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Connect your Facebook Ads account to see your campaigns here.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <CreateTestForm
         newTest={newTest}
@@ -132,3 +161,4 @@ export const ABTestingDashboard = () => {
     </div>
   );
 };
+

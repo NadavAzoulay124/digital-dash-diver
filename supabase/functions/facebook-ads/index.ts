@@ -7,17 +7,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface FacebookAdsCredentials {
-  ad_account_id: string;
-  access_token: string;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    console.log('Starting Facebook ads data fetch')
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
@@ -35,8 +32,16 @@ serve(async (req) => {
       error: userError,
     } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
 
-    if (userError) throw userError
-    if (!user) throw new Error('User not found')
+    if (userError) {
+      console.error('User auth error:', userError)
+      throw userError
+    }
+    if (!user) {
+      console.error('No user found')
+      throw new Error('User not found')
+    }
+
+    console.log('Fetching Facebook credentials for user:', user.id)
 
     // Get user's Facebook credentials
     const { data: credentials, error: credentialsError } = await supabase
@@ -45,8 +50,16 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single()
 
-    if (credentialsError) throw credentialsError
-    if (!credentials) throw new Error('Facebook credentials not found')
+    if (credentialsError) {
+      console.error('Credentials fetch error:', credentialsError)
+      throw credentialsError
+    }
+    if (!credentials) {
+      console.error('No Facebook credentials found for user')
+      throw new Error('Facebook credentials not found')
+    }
+
+    console.log('Making request to Facebook API')
 
     // Make the API call to Facebook
     const fbResponse = await fetch(
@@ -56,16 +69,17 @@ serve(async (req) => {
     if (!fbResponse.ok) {
       const error = await fbResponse.json()
       console.error('Facebook API error:', error)
-      throw new Error('Failed to fetch Facebook campaigns')
+      throw new Error(`Facebook API error: ${JSON.stringify(error)}`)
     }
 
     const campaigns = await fbResponse.json()
+    console.log('Successfully fetched campaigns:', campaigns)
     
     return new Response(JSON.stringify(campaigns), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error('Error:', error.message)
+    console.error('Error in facebook-ads function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -75,3 +89,4 @@ serve(async (req) => {
     )
   }
 })
+

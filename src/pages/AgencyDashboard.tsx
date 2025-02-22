@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useSearchParams, useNavigate } from "react-router-dom";
 import { FacebookConnectForm } from "@/components/dashboard/facebook/FacebookConnectForm";
 import { CampaignInsights } from "@/components/dashboard/CampaignInsights";
 import { CampaignChart } from "@/components/dashboard/CampaignChart";
@@ -12,6 +12,9 @@ import { ContractsList } from "@/components/dashboard/contract/ContractsList";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ignoredTasks } from "@/data/mockTasks";
 import { GoogleConnectForm } from "@/components/dashboard/google/GoogleConnectForm";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -23,9 +26,74 @@ const mockFinancialData = [
   { month: "Jul", income: 3490, expenses: 4300 },
 ];
 
+const GoogleOAuthCallback = () => {
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      const code = searchParams.get("code");
+      if (!code) {
+        toast({
+          title: "Error",
+          description: "No authorization code received",
+          variant: "destructive",
+        });
+        navigate("/agency");
+        return;
+      }
+
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        if (!session?.session) {
+          throw new Error("No active session");
+        }
+
+        const response = await fetch("/api/functions/v1/google-ads-auth", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to exchange code for tokens");
+        }
+
+        const data = await response.json();
+        console.log("OAuth callback response:", data);
+
+        toast({
+          title: "Success",
+          description: "Successfully connected to Google Ads",
+        });
+      } catch (error) {
+        console.error("OAuth callback error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to complete Google Ads connection",
+          variant: "destructive",
+        });
+      } finally {
+        navigate("/agency");
+      }
+    };
+
+    handleCallback();
+  }, [searchParams, toast, navigate]);
+
+  return null;
+};
+
 const AgencyDashboard = () => {
   return (
     <Routes>
+      <Route
+        path="oauth/callback"
+        element={<GoogleOAuthCallback />}
+      />
       <Route
         index
         element={
@@ -63,3 +131,4 @@ const AgencyDashboard = () => {
 };
 
 export default AgencyDashboard;
+

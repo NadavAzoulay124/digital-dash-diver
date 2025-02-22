@@ -32,6 +32,10 @@ export const useFacebookAccounts = () => {
       }
 
       console.log("Fetched credentials:", credentials);
+      // If there are credentials, select the first one by default
+      if (credentials && credentials.length > 0 && !selectedAccountId) {
+        setSelectedAccountId(credentials[0].id);
+      }
       return credentials as SavedCredential[];
     },
     meta: {
@@ -60,6 +64,10 @@ export const useFacebookAccounts = () => {
         description: "Facebook account removed successfully",
       });
 
+      if (selectedAccountId === credentialId) {
+        setSelectedAccountId(null);
+      }
+
       await refetch();
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -71,6 +79,11 @@ export const useFacebookAccounts = () => {
     }
   };
 
+  const getSelectedAccount = () => {
+    if (!savedCredentials || !selectedAccountId) return null;
+    return savedCredentials.find((cred) => cred.id === selectedAccountId);
+  };
+
   return {
     savedCredentials,
     isLoading,
@@ -78,5 +91,6 @@ export const useFacebookAccounts = () => {
     setSelectedAccountId,
     deleteAccount,
     refetch,
+    getSelectedAccount,
   };
 };

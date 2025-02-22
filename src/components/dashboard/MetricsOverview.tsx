@@ -1,4 +1,3 @@
-
 import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { useQuery } from "@tanstack/react-query";
@@ -6,25 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
 
 export const MetricsOverview = () => {
+  const { getSelectedAccount } = useFacebookAccounts();
+  const selectedAccount = getSelectedAccount();
+
   // Query Facebook campaigns data
   const { data: facebookData, isError, isLoading } = useQuery({
-    queryKey: ['facebook-campaigns-metrics'],
+    queryKey: ['facebook-campaigns-metrics', selectedAccount?.id],
     queryFn: async () => {
-      // Get Facebook credentials
-      const { data: credentials, error: credentialsError } = await supabase
-        .from('facebook_ads_credentials')
-        .select('*')
-        .maybeSingle();
-
-      if (credentialsError) {
-        console.error('Error fetching credentials:', credentialsError);
-        throw new Error('Failed to fetch Facebook credentials');
-      }
-
-      if (!credentials) {
-        console.log('No Facebook credentials found');
+      if (!selectedAccount) {
+        console.log('No account selected');
         return { data: [] };
       }
 
@@ -32,14 +24,14 @@ export const MetricsOverview = () => {
       const today = format(new Date(), 'yyyy-MM-dd');
       
       console.log('Fetching campaigns with credentials:', {
-        adAccountId: credentials.ad_account_id,
+        adAccountId: selectedAccount.ad_account_id,
         date: today
       });
 
       const response = await supabase.functions.invoke('facebook-ads', {
         body: { 
-          adAccountId: credentials.ad_account_id,
-          accessToken: credentials.access_token,
+          adAccountId: selectedAccount.ad_account_id,
+          accessToken: selectedAccount.access_token,
           since: today,
           until: today
         }
@@ -52,7 +44,8 @@ export const MetricsOverview = () => {
 
       console.log('Raw campaign data:', response.data);
       return response.data || { data: [] };
-    }
+    },
+    enabled: !!selectedAccount,
   });
 
   // Calculate metrics from campaign data

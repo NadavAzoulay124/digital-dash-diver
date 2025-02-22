@@ -34,7 +34,10 @@ export const SavedAccountsList = ({
               className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${
                 selectedAccountId === cred.id ? 'bg-primary/10 border-primary' : 'hover:bg-accent'
               }`}
-              onClick={() => onAccountSelect(cred.id)}
+              onClick={() => {
+                console.log("Selecting account:", cred);
+                onAccountSelect(cred.id);
+              }}
             >
               <div>
                 <p className="font-medium">{cred.account_name}</p>
@@ -67,4 +70,3 @@ export const SavedAccountsList = ({
     </ScrollArea>
   );
 };
-

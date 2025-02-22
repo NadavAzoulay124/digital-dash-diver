@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const REDIRECT_URI = 'https://hxhqzycgpdjzjrowyjxn.supabase.co/functions/v1/google-ads-auth/callback';
+const REDIRECT_URI = 'http://localhost:5173/agency/oauth/callback';  // Updated to match the application route
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

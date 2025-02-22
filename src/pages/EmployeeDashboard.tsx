@@ -9,6 +9,8 @@ import { ClientInsights } from "@/components/dashboard/ClientInsights";
 import { ABTestingDashboard } from "@/components/dashboard/ABTestingDashboard";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ignoredTasks } from "@/data/mockTasks";
+import { FacebookConnectForm } from "@/components/dashboard/facebook/FacebookConnectForm";
+import { MetricsOverview } from "@/components/dashboard/MetricsOverview";
 
 const EmployeeDashboard = () => {
   return (
@@ -21,6 +23,10 @@ const EmployeeDashboard = () => {
               <Route path="/" element={
                 <>
                   <h1 className="text-2xl font-bold mb-8">Client Contact Management</h1>
+                  <div className="space-y-8">
+                    <FacebookConnectForm />
+                    <MetricsOverview />
+                  </div>
                   <ClientContactDashboard />
                 </>
               } />

@@ -1,3 +1,4 @@
+
 import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { useQuery } from "@tanstack/react-query";
@@ -6,86 +7,114 @@ import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
+import { useGoogleAdsAccounts } from "@/hooks/useGoogleAdsAccounts";
 
 export const MetricsOverview = () => {
-  const { getSelectedAccount } = useFacebookAccounts();
-  const selectedAccount = getSelectedAccount();
+  const { getSelectedAccount: getSelectedFacebookAccount } = useFacebookAccounts();
+  const { getSelectedAccount: getSelectedGoogleAccount } = useGoogleAdsAccounts();
+  
+  const selectedFacebookAccount = getSelectedFacebookAccount();
+  const selectedGoogleAccount = getSelectedGoogleAccount();
 
   // Query Facebook campaigns data
-  const { data: facebookData, isError, isLoading } = useQuery({
-    queryKey: ['facebook-campaigns-metrics', selectedAccount?.id],
+  const { data: facebookData, isError: isFacebookError, isLoading: isFacebookLoading } = useQuery({
+    queryKey: ['facebook-campaigns-metrics', selectedFacebookAccount?.id],
     queryFn: async () => {
-      if (!selectedAccount) {
-        console.log('No account selected');
+      if (!selectedFacebookAccount) {
+        console.log('No Facebook account selected');
         return { data: [] };
       }
 
       // Use today's date for initial metrics
       const today = format(new Date(), 'yyyy-MM-dd');
       
-      console.log('Fetching campaigns with credentials:', {
-        adAccountId: selectedAccount.ad_account_id,
+      console.log('Fetching Facebook campaigns with credentials:', {
+        adAccountId: selectedFacebookAccount.ad_account_id,
         date: today
       });
 
       const response = await supabase.functions.invoke('facebook-ads', {
         body: { 
-          adAccountId: selectedAccount.ad_account_id,
-          accessToken: selectedAccount.access_token,
+          adAccountId: selectedFacebookAccount.ad_account_id,
+          accessToken: selectedFacebookAccount.access_token,
           since: today,
           until: today
         }
       });
 
       if (response.error) {
-        console.error('Edge function error:', response.error);
+        console.error('Facebook edge function error:', response.error);
         throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
       }
 
-      console.log('Raw campaign data:', response.data);
       return response.data || { data: [] };
     },
-    enabled: !!selectedAccount,
+    enabled: !!selectedFacebookAccount,
   });
 
-  // Calculate metrics from campaign data
+  // Query Google Ads data
+  const { data: googleData, isError: isGoogleError, isLoading: isGoogleLoading } = useQuery({
+    queryKey: ['google-ads-metrics', selectedGoogleAccount?.id],
+    queryFn: async () => {
+      if (!selectedGoogleAccount) {
+        console.log('No Google Ads account selected');
+        return { data: [] };
+      }
+
+      console.log('Fetching Google Ads metrics with credentials:', {
+        customerId: selectedGoogleAccount.customer_id
+      });
+
+      const response = await supabase.functions.invoke('google-ads-metrics', {
+        body: {
+          customerId: selectedGoogleAccount.customer_id,
+          clientId: selectedGoogleAccount.client_id,
+          developerToken: selectedGoogleAccount.developer_token,
+          refreshToken: selectedGoogleAccount.refresh_token
+        }
+      });
+
+      if (response.error) {
+        console.error('Google Ads edge function error:', response.error);
+        throw new Error(response.error.message || 'Failed to fetch Google Ads metrics');
+      }
+
+      return response.data || { data: [] };
+    },
+    enabled: !!selectedGoogleAccount,
+  });
+
+  const isLoading = isFacebookLoading || isGoogleLoading;
+  const isError = isFacebookError || isGoogleError;
+
+  // Calculate combined metrics from both platforms
   const calculateMetrics = () => {
-    if (!facebookData?.data || !Array.isArray(facebookData.data)) {
-      console.log('No campaign data available for metrics calculation');
-      return {
-        totalSpent: 0,
-        totalLeads: 0,
-        activeClients: 0,
-        openTasks: 0,
-        spentChange: 0,
-        leadsChange: 0,
-        clientsChange: 0,
-        tasksChange: 0
-      };
+    let totalSpent = 0;
+    let totalLeads = 0;
+    let totalClicks = 0;
+
+    // Calculate Facebook metrics
+    if (facebookData?.data && Array.isArray(facebookData.data)) {
+      facebookData.data.forEach(campaign => {
+        if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
+          const insights = campaign.insights.data[0];
+          totalSpent += parseFloat(insights.spend || '0');
+          totalClicks += parseInt(insights.clicks || '0', 10);
+          totalLeads += parseInt(insights.conversions || '0', 10) || Math.round(totalClicks * 0.02);
+        }
+      });
     }
 
-    let totalSpent = 0;
-    let totalClicks = 0;
-    let totalLeads = 0;
-
-    // Calculate current period metrics
-    facebookData.data.forEach(campaign => {
-      if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
-        const insights = campaign.insights.data[0];
-        
-        // Parse numerical values from insights
-        const spent = parseFloat(insights.spend || '0');
-        const clicks = parseInt(insights.clicks || '0', 10);
-        const conversions = parseInt(insights.conversions || '0', 10);
-        
-        totalSpent += spent;
-        totalClicks += clicks;
-        totalLeads += conversions || Math.round(clicks * 0.02); // Fallback to estimated leads if no conversion data
-      }
-    });
+    // Add Google Ads metrics
+    if (googleData?.data && Array.isArray(googleData.data)) {
+      googleData.data.forEach(campaign => {
+        totalSpent += parseFloat(campaign.metrics?.cost_micros || '0') / 1000000;
+        totalClicks += parseInt(campaign.metrics?.clicks || '0', 10);
+        totalLeads += parseInt(campaign.metrics?.conversions || '0', 10) || Math.round(totalClicks * 0.02);
+      });
+    }
 
     // For demo purposes, simulate percentage changes
-    // In a real app, you would compare with historical data
     const spentChange = 15.2;
     const leadsChange = 12;
     const clientsChange = 4;
@@ -118,7 +147,7 @@ export const MetricsOverview = () => {
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Failed to load campaign metrics. Please check your Facebook Ads connection.
+          Failed to load campaign metrics. Please check your ad platform connections.
         </AlertDescription>
       </Alert>
     );

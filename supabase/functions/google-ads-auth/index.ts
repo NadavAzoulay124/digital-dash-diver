@@ -1,12 +1,22 @@
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const REDIRECT_URI = 'YOUR_REDIRECT_URI'; // We'll need to set this in the Google Cloud Console
+const REDIRECT_URI = 'http://localhost:5173/agency';  // This should match your Google Console settings
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get('code');
@@ -17,6 +27,8 @@ serve(async (req) => {
       if (!clientId) {
         throw new Error('GOOGLE_CLIENT_ID is not set');
       }
+
+      console.log('Starting OAuth flow with client ID:', clientId);
 
       const state = crypto.randomUUID();
       
@@ -33,13 +45,15 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ url: `${GOOGLE_OAUTH_URL}?${params.toString()}` }),
         { 
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
         }
       );
     }
 
     // Handle the OAuth callback
+    console.log('Received OAuth callback with code');
+    
     const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
     const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
     
@@ -65,8 +79,11 @@ serve(async (req) => {
     const tokens = await tokenResponse.json();
     
     if (!tokenResponse.ok) {
+      console.error('Token exchange failed:', tokens);
       throw new Error('Failed to exchange code for tokens');
     }
+
+    console.log('Successfully obtained tokens');
 
     return new Response(
       JSON.stringify({ 
@@ -74,19 +91,19 @@ serve(async (req) => {
         access_token: tokens.access_token 
       }),
       { 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
       }
     );
 
   } catch (error) {
+    console.error('Error in google-ads-auth function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
       }
     );
   }
 });
-

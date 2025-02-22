@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertTriangle, TrendingUp, Target, DollarSign, Users, BarChart } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
   SelectContent,
@@ -318,11 +320,11 @@ export const AIAssistant = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-insights', {
-        body: {
+        body: JSON.stringify({
           query,
           insights,
           selectedClient
-        }
+        })
       });
 
       if (error) {
@@ -335,11 +337,19 @@ export const AIAssistant = () => {
         return;
       }
 
-      setResponse(data.response);
-      toast({
-        title: "AI Insights Generated",
-        description: "Analysis complete! Review the recommendations below.",
-      });
+      if (data?.response) {
+        setResponse(data.response);
+        toast({
+          title: "AI Insights Generated",
+          description: "Analysis complete! Review the recommendations below.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No response received from the AI. Please try again.",
+          variant: "destructive"
+        });
+      }
     } catch (err) {
       console.error('Error:', err);
       toast({

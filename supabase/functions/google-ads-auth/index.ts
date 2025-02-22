@@ -1,14 +1,14 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const REDIRECT_URI = 'http://localhost:5173/agency/oauth/callback';  // Updated to match the application route
+const REDIRECT_URI = 'https://000c9743-e967-4e92-8c88-f6aa6df43947.lovableproject.com/agency/oauth/callback';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json'
 };
 
 serve(async (req) => {
@@ -28,10 +28,9 @@ serve(async (req) => {
         throw new Error('GOOGLE_CLIENT_ID is not set');
       }
 
-      console.log('Starting OAuth flow with client ID:', clientId);
-
-      const state = crypto.randomUUID();
+      console.log('Starting OAuth flow...');
       
+      const state = crypto.randomUUID();
       const params = new URLSearchParams({
         client_id: clientId,
         redirect_uri: REDIRECT_URI,
@@ -44,10 +43,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ url: `${GOOGLE_OAUTH_URL}?${params.toString()}` }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
+        { headers: corsHeaders }
       );
     }
 
@@ -90,10 +86,7 @@ serve(async (req) => {
         refresh_token: tokens.refresh_token,
         access_token: tokens.access_token 
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { headers: corsHeaders }
     );
 
   } catch (error) {
@@ -101,7 +94,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
         status: 500 
       }
     );

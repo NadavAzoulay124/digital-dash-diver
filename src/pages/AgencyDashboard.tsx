@@ -1,4 +1,3 @@
-
 import { Routes, Route, useSearchParams, useNavigate } from "react-router-dom";
 import { FacebookConnectForm } from "@/components/dashboard/facebook/FacebookConnectForm";
 import { CampaignInsights } from "@/components/dashboard/CampaignInsights";
@@ -12,9 +11,8 @@ import { ContractsList } from "@/components/dashboard/contract/ContractsList";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ignoredTasks } from "@/data/mockTasks";
 import { GoogleConnectForm } from "@/components/dashboard/google/GoogleConnectForm";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -45,26 +43,18 @@ const GoogleOAuthCallback = () => {
       }
 
       try {
-        const { data: session } = await supabase.auth.getSession();
-        if (!session?.session) {
-          throw new Error("No active session");
-        }
-
-        const response = await fetch("/api/functions/v1/google-ads-auth", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code }),
+        console.log("Exchanging code for tokens...");
+        const response = await supabase.functions.invoke('google-ads-auth', {
+          body: { code }
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to exchange code for tokens");
+        if (response.error) {
+          console.error('OAuth callback error:', response.error);
+          throw new Error(response.error.message);
         }
 
-        const data = await response.json();
-        console.log("OAuth callback response:", data);
-
+        console.log("OAuth callback response:", response.data);
+        
         toast({
           title: "Success",
           description: "Successfully connected to Google Ads",
@@ -131,4 +121,3 @@ const AgencyDashboard = () => {
 };
 
 export default AgencyDashboard;
-

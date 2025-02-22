@@ -11,7 +11,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.google-ads-auth]
-verify_jwt = true
+verify_jwt = false
 
 [functions.google-ads-metrics]
 verify_jwt = true

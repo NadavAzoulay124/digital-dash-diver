@@ -10,3 +10,8 @@ verify_jwt = true
 [functions.generate-insights]
 verify_jwt = true
 
+[functions.google-ads-auth]
+verify_jwt = true
+
+[functions.google-ads-metrics]
+verify_jwt = true

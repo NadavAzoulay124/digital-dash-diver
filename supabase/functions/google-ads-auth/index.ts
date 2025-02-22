@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const REDIRECT_URI = 'http://localhost:5173/agency';  // This should match your Google Console settings
+const REDIRECT_URI = 'https://hxhqzycgpdjzjrowyjxn.supabase.co/functions/v1/google-ads-auth/callback';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,8 +18,8 @@ serve(async (req) => {
   }
 
   try {
-    const { searchParams } = new URL(req.url);
-    const code = searchParams.get('code');
+    const url = new URL(req.url);
+    const code = url.searchParams.get('code');
     
     // If there's no code, we start the OAuth flow
     if (!code) {

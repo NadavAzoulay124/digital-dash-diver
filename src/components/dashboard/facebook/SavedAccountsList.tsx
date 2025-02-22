@@ -34,9 +34,14 @@ export const SavedAccountsList = ({
               className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${
                 selectedAccountId === cred.id ? 'bg-primary/10 border-primary' : 'hover:bg-accent'
               }`}
-              onClick={() => {
-                console.log("Selecting account:", cred);
-                onAccountSelect(cred.id);
+              role="button"
+              tabIndex={0}
+              onClick={() => onAccountSelect(cred.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onAccountSelect(cred.id);
+                }
               }}
             >
               <div>

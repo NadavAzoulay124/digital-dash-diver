@@ -39,6 +39,9 @@ export const SavedAccountsList = ({
               <div>
                 <p className="font-medium">{cred.account_name}</p>
                 <p className="text-sm text-gray-500">Account ID: {cred.ad_account_id}</p>
+                {cred.client_name && (
+                  <p className="text-sm text-blue-600">Client: {cred.client_name}</p>
+                )}
                 <p className="text-xs text-gray-400">
                   Connected on {new Date(cred.created_at).toLocaleDateString()}
                 </p>
@@ -64,3 +67,4 @@ export const SavedAccountsList = ({
     </ScrollArea>
   );
 };
+

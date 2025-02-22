@@ -91,6 +91,7 @@ export type Database = {
           access_token: string
           account_name: string
           ad_account_id: string
+          client_name: string | null
           created_at: string | null
           id: string
           updated_at: string | null
@@ -100,6 +101,7 @@ export type Database = {
           access_token: string
           account_name?: string
           ad_account_id: string
+          client_name?: string | null
           created_at?: string | null
           id?: string
           updated_at?: string | null
@@ -109,6 +111,7 @@ export type Database = {
           access_token?: string
           account_name?: string
           ad_account_id?: string
+          client_name?: string | null
           created_at?: string | null
           id?: string
           updated_at?: string | null

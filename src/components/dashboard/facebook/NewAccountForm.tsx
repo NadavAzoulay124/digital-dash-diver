@@ -17,6 +17,7 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
     accountName: "",
     adAccountId: "",
     accessToken: "",
+    clientName: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -30,6 +31,9 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
     }
     if (!formData.accessToken.trim()) {
       newErrors.accessToken = "Access Token is required";
+    }
+    if (!formData.clientName.trim()) {
+      newErrors.clientName = "Client name is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -52,6 +56,7 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
           account_name: formData.accountName,
           ad_account_id: formData.adAccountId,
           access_token: formData.accessToken,
+          client_name: formData.clientName,
         },
       ]);
 
@@ -59,7 +64,7 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
         if (error.code === "23505") {
           toast({
             title: "Error",
-            description: "This Facebook Ad Account is already connected",
+            description: "This Facebook Ad Account is already connected to a client",
             variant: "destructive",
           });
         } else {
@@ -77,6 +82,7 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
         accountName: "",
         adAccountId: "",
         accessToken: "",
+        clientName: "",
       });
       onSuccess();
     } catch (error) {
@@ -130,9 +136,22 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
           <p className="text-sm text-destructive mt-1">{errors.accessToken}</p>
         )}
       </div>
+      <div>
+        <Input
+          placeholder="Client Name"
+          value={formData.clientName}
+          onChange={(e) =>
+            setFormData({ ...formData, clientName: e.target.value })
+          }
+        />
+        {errors.clientName && (
+          <p className="text-sm text-destructive mt-1">{errors.clientName}</p>
+        )}
+      </div>
       <Button type="submit" disabled={loading}>
         {loading ? "Connecting..." : "Connect Account"}
       </Button>
     </form>
   );
 };
+

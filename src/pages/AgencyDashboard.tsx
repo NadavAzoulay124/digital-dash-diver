@@ -11,6 +11,7 @@ import { ContractCreation } from "@/components/dashboard/ContractCreation";
 import { ContractsList } from "@/components/dashboard/contract/ContractsList";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ignoredTasks } from "@/data/mockTasks";
+import { GoogleConnectForm } from "@/components/dashboard/google/GoogleConnectForm";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -34,6 +35,7 @@ const AgencyDashboard = () => {
               <FinancialOverview data={mockFinancialData} />
             </div>
             <FacebookConnectForm />
+            <GoogleConnectForm />
             <div className="grid gap-6 md:grid-cols-2">
               <CampaignChart />
               <CampaignInsights />
@@ -61,4 +63,3 @@ const AgencyDashboard = () => {
 };
 
 export default AgencyDashboard;
-

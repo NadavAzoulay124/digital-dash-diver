@@ -29,15 +29,6 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
     if (!formData.accountName.trim()) {
       newErrors.accountName = "Account name is required";
     }
-    if (!formData.clientId.trim()) {
-      newErrors.clientId = "Client ID is required";
-    }
-    if (!formData.clientSecret.trim()) {
-      newErrors.clientSecret = "Client Secret is required";
-    }
-    if (!formData.refreshToken.trim()) {
-      newErrors.refreshToken = "Refresh Token is required";
-    }
     if (!formData.developerToken.trim()) {
       newErrors.developerToken = "Developer Token is required";
     }
@@ -49,6 +40,21 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleOAuthClick = async () => {
+    try {
+      const response = await fetch("/api/functions/v1/google-ads-auth");
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error("Error initiating OAuth:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start Google OAuth flow",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,45 +137,6 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
       </div>
       <div>
         <Input
-          placeholder="Client ID"
-          value={formData.clientId}
-          onChange={(e) =>
-            setFormData({ ...formData, clientId: e.target.value })
-          }
-        />
-        {errors.clientId && (
-          <p className="text-sm text-destructive mt-1">{errors.clientId}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          type="password"
-          placeholder="Client Secret"
-          value={formData.clientSecret}
-          onChange={(e) =>
-            setFormData({ ...formData, clientSecret: e.target.value })
-          }
-        />
-        {errors.clientSecret && (
-          <p className="text-sm text-destructive mt-1">{errors.clientSecret}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          type="password"
-          placeholder="Refresh Token"
-          value={formData.refreshToken}
-          onChange={(e) =>
-            setFormData({ ...formData, refreshToken: e.target.value })
-          }
-        />
-        {errors.refreshToken && (
-          <p className="text-sm text-destructive mt-1">{errors.refreshToken}</p>
-        )}
-      </div>
-      <div>
-        <Input
-          type="password"
           placeholder="Developer Token"
           value={formData.developerToken}
           onChange={(e) =>
@@ -204,9 +171,16 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
           <p className="text-sm text-destructive mt-1">{errors.clientName}</p>
         )}
       </div>
-      <Button type="submit" disabled={loading}>
-        {loading ? "Connecting..." : "Connect Account"}
-      </Button>
+
+      <div className="flex flex-col gap-2">
+        <Button type="button" variant="outline" onClick={handleOAuthClick}>
+          Connect with Google Ads
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? "Connecting..." : "Save Account"}
+        </Button>
+      </div>
     </form>
   );
 };
+

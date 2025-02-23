@@ -12,3 +12,11 @@ export interface GoogleAdsAccountFormData {
   customerId: string;
   developerToken: string;
 }
+
+export interface FormErrors {
+  accountName?: string;
+  developerToken?: string;
+  customerId?: string;
+  clientName?: string;
+}
+

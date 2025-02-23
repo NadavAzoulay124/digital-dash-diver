@@ -3,6 +3,7 @@ import { subDays, parseISO, isWithinInterval } from "date-fns";
 
 interface Campaign {
   name: string;
+  status?: string;
   insights?: {
     data: Array<{
       date_start: string;
@@ -33,7 +34,10 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
   const sevenDaysAgo = subDays(now, 7);
   
   if (Array.isArray(campaignsData)) {
-    campaignsData.forEach(campaign => {
+    // Filter for active campaigns only
+    const activeCampaigns = campaignsData.filter(campaign => campaign.status === 'ACTIVE');
+    
+    activeCampaigns.forEach(campaign => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
         const dateStart = parseISO(insights.date_start);
@@ -42,7 +46,8 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
           campaignCount++;
           
           const spendAmount = parseFloat(insights.spend || '0');
-          console.log(`Campaign ${campaign.name} within 7 days:`, {
+          console.log(`Active campaign ${campaign.name}:`, {
+            status: campaign.status,
             spend: spendAmount,
             rawSpend: insights.spend,
             clicks: insights.clicks,
@@ -63,7 +68,7 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     });
   }
 
-  console.log('Final metrics calculation for last 7 days:', {
+  console.log('Final metrics calculation for active campaigns in last 7 days:', {
     timestamp: new Date().toISOString(),
     totalSpent,
     totalClicks,

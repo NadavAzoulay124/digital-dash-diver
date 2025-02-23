@@ -18,11 +18,27 @@ serve(async (req) => {
   }
 
   try {
-    const { code } = await req.json().catch(() => ({}));
+    // Log environment variables (excluding secret values)
+    console.log('Environment check:', {
+      hasClientId: !!GOOGLE_OAUTH_CLIENT_ID,
+      hasClientSecret: !!GOOGLE_OAUTH_CLIENT_SECRET,
+      hasRedirectUri: !!GOOGLE_OAUTH_REDIRECT_URI,
+      redirectUri: GOOGLE_OAUTH_REDIRECT_URI
+    });
+
+    const { code } = await req.json().catch(() => {
+      console.log('No JSON body provided, initiating OAuth flow');
+      return {};
+    });
 
     // If no code is provided, initiate OAuth flow
     if (!code) {
       console.log('Initiating OAuth flow...');
+      
+      if (!GOOGLE_OAUTH_CLIENT_ID || !GOOGLE_OAUTH_REDIRECT_URI) {
+        throw new Error('Missing required OAuth configuration');
+      }
+
       // OAuth 2.0 configuration
       const scope = encodeURIComponent('https://www.googleapis.com/auth/adwords');
       const responseType = 'code';
@@ -53,6 +69,11 @@ serve(async (req) => {
 
     // Exchange code for tokens
     console.log('Exchanging code for tokens...');
+    
+    if (!GOOGLE_OAUTH_CLIENT_ID || !GOOGLE_OAUTH_CLIENT_SECRET || !GOOGLE_OAUTH_REDIRECT_URI) {
+      throw new Error('Missing required OAuth configuration for token exchange');
+    }
+
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
@@ -68,11 +89,11 @@ serve(async (req) => {
     });
 
     const tokenData = await tokenResponse.json();
-    console.log('Token exchange response:', tokenData);
+    console.log('Token exchange response status:', tokenResponse.status);
 
     if (!tokenResponse.ok) {
       console.error('Token exchange error:', tokenData);
-      throw new Error('Failed to exchange authorization code for tokens');
+      throw new Error(`Failed to exchange authorization code: ${tokenData.error}`);
     }
 
     return new Response(
@@ -88,7 +109,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in Google Ads auth function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Check the function logs for more information'
+      }),
       { 
         status: 500,
         headers: { 
@@ -99,3 +123,4 @@ serve(async (req) => {
     );
   }
 });
+

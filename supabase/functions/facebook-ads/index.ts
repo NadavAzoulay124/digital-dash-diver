@@ -12,7 +12,6 @@ interface RequestBody {
   since?: string;
   until?: string;
   clientName?: string;
-  timezone?: string;
 }
 
 serve(async (req) => {
@@ -29,40 +28,39 @@ serve(async (req) => {
       hasAccessToken: !!requestData.accessToken,
       since: requestData.since,
       until: requestData.until,
-      clientName: requestData.clientName,
-      timezone: requestData.timezone
+      clientName: requestData.clientName
     });
 
     if (!requestData.adAccountId || !requestData.accessToken) {
       throw new Error('Missing required credentials');
     }
 
-    const { adAccountId, accessToken, since, until, timezone } = requestData;
+    const { adAccountId, accessToken, since, until } = requestData;
 
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
     // Construct the insights fields we want to retrieve
-    const insightsFields = 'spend,clicks,impressions,date_start,date_stop';
+    const insightsFields = 'spend,clicks,impressions';
     
     // Add campaign status and name to fetch
     const campaignFields = 'name,objective,status';
     
-    // Construct time range for insights
-    const timeRange = {
-      since: since || new Date().toISOString().split('T')[0],
-      until: until || new Date().toISOString().split('T')[0],
-      timezone_type: timezone ? 'custom' : 'default',
-      timezone: timezone || 'UTC'
-    };
+    // Construct time range without timezone information
+    const timeRange = since && until ? {
+      since,
+      until
+    } : undefined;
 
     console.log('Using time range:', timeRange);
 
     // Construct Facebook API URL with all necessary parameters
     const campaignsUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
     const params = new URLSearchParams({
-      fields: `${campaignFields},insights.time_range(${JSON.stringify(timeRange)}){${insightsFields}}`,
       access_token: accessToken,
+      fields: timeRange 
+        ? `${campaignFields},insights.time_range(${JSON.stringify(timeRange)}){${insightsFields}}`
+        : `${campaignFields},insights{${insightsFields}}`
     });
 
     const url = `${campaignsUrl}?${params}`;

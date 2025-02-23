@@ -3,7 +3,7 @@ import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, subHours } from "date-fns";
+import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
@@ -31,8 +31,7 @@ export const MetricsOverview = () => {
         adAccountId: selectedFacebookAccount.ad_account_id,
         clientName: selectedFacebookAccount.client_name,
         date: todayStr,
-        currentTime: today.toISOString(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        currentTime: today.toISOString()
       });
 
       const response = await supabase.functions.invoke('facebook-ads', {
@@ -41,8 +40,7 @@ export const MetricsOverview = () => {
           accessToken: selectedFacebookAccount.access_token,
           since: todayStr,
           until: todayStr,
-          clientName: selectedFacebookAccount.client_name,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          clientName: selectedFacebookAccount.client_name
         }
       });
 
@@ -58,7 +56,6 @@ export const MetricsOverview = () => {
 
       console.log('Response from Facebook API:', {
         timestamp: new Date().toISOString(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         data: response.data
       });
       
@@ -129,7 +126,6 @@ export const MetricsOverview = () => {
 
     console.log('Metrics calculation summary:', {
       timestamp: new Date().toISOString(),
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       totalSpent,
       totalClicks,
       totalLeads,
@@ -192,4 +188,3 @@ export const MetricsOverview = () => {
     </div>
   );
 };
-

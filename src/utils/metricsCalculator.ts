@@ -34,19 +34,41 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
   const sevenDaysAgo = subDays(now, 7);
   
   if (Array.isArray(campaignsData)) {
+    console.log('Initial campaigns data:', {
+      totalCampaigns: campaignsData.length,
+      campaigns: campaignsData.map(c => ({
+        name: c.name,
+        status: c.status,
+        hasInsights: Boolean(c.insights?.data?.length)
+      }))
+    });
+
     // Filter for active campaigns only
     const activeCampaigns = campaignsData.filter(campaign => campaign.status === 'ACTIVE');
+    
+    console.log('Active campaigns:', {
+      totalActive: activeCampaigns.length,
+      activeCampaigns: activeCampaigns.map(c => c.name)
+    });
     
     activeCampaigns.forEach(campaign => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
         const dateStart = parseISO(insights.date_start);
         
-        if (isWithinInterval(dateStart, { start: sevenDaysAgo, end: now })) {
+        const isWithinRange = isWithinInterval(dateStart, { start: sevenDaysAgo, end: now });
+        console.log(`Checking date range for campaign ${campaign.name}:`, {
+          dateStart: dateStart.toISOString(),
+          sevenDaysAgo: sevenDaysAgo.toISOString(),
+          now: now.toISOString(),
+          isWithinRange
+        });
+
+        if (isWithinRange) {
           campaignCount++;
           
           const spendAmount = parseFloat(insights.spend || '0');
-          console.log(`Active campaign ${campaign.name}:`, {
+          console.log(`Processing campaign ${campaign.name}:`, {
             status: campaign.status,
             spend: spendAmount,
             rawSpend: insights.spend,
@@ -63,7 +85,15 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
           
           const estimatedLeads = Math.round(clicks * 0.02);
           totalLeads += estimatedLeads;
+        } else {
+          console.log(`Campaign ${campaign.name} outside date range:`, {
+            dateStart: dateStart.toISOString(),
+            sevenDaysAgo: sevenDaysAgo.toISOString(),
+            now: now.toISOString()
+          });
         }
+      } else {
+        console.log(`No insights data for campaign ${campaign.name}`);
       }
     });
   }

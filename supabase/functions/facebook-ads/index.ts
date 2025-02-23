@@ -45,47 +45,42 @@ serve(async (req) => {
     
     // Add campaign status and name to fetch
     const campaignFields = 'name,objective,status';
-    
-    // Construct time range without timezone information
-    const timeRange = since && until ? {
-      since,
-      until
-    } : undefined;
-
-    console.log('Using time range:', timeRange);
 
     // Construct Facebook API URL with all necessary parameters
     const campaignsUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
+    const fields = `${campaignFields}`;
+    const insightsParam = since && until 
+      ? `insights.time_range({"since":"${since}","until":"${until}"}){${insightsFields}}`
+      : `insights{${insightsFields}}`;
+    
     const params = new URLSearchParams({
       access_token: accessToken,
-      fields: timeRange 
-        ? `${campaignFields},insights.time_range(${JSON.stringify(timeRange)}){${insightsFields}}`
-        : `${campaignFields},insights{${insightsFields}}`
+      fields: `${fields},${insightsParam}`
     });
 
     const url = `${campaignsUrl}?${params}`;
     console.log('Fetching from URL:', url.replace(accessToken, '[REDACTED]'));
 
     const response = await fetch(url);
-    const responseData = await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error('Facebook API error:', responseData);
-      throw new Error(`Facebook API error: ${JSON.stringify(responseData.error || responseData)}`);
+      console.error('Facebook API error:', data);
+      throw new Error(`Facebook API error: ${JSON.stringify(data.error || data)}`);
     }
 
     // Log the successful response data structure
     console.log('Facebook API response structure:', {
-      totalCampaigns: responseData?.data?.length || 0,
-      hasData: !!responseData?.data,
-      firstCampaign: responseData?.data?.[0] ? {
-        name: responseData.data[0].name,
-        hasInsights: !!responseData.data[0].insights,
-        timeRange
+      totalCampaigns: data?.data?.length || 0,
+      hasData: !!data?.data,
+      firstCampaign: data?.data?.[0] ? {
+        name: data.data[0].name,
+        hasInsights: !!data.data[0].insights,
+        insightsData: data.data[0].insights?.data?.[0]
       } : null
     });
 
-    return new Response(JSON.stringify(responseData), {
+    return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

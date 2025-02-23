@@ -44,21 +44,9 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
       }))
     });
 
-    // Filter for active campaigns only
-    const activeCampaigns = campaignsData.filter(campaign => campaign.status === 'ACTIVE');
+    const campaignsWithSpend: Array<{name: string, spend: number, date: string, status: string}> = [];
     
-    console.log('Active campaigns:', {
-      totalActive: activeCampaigns.length,
-      activeCampaigns: activeCampaigns.map(c => ({
-        name: c.name,
-        spendData: c.insights?.data?.[0]?.spend || 'No spend data',
-        date: c.insights?.data?.[0]?.date_start || 'No date'
-      }))
-    });
-    
-    const campaignsWithSpend: Array<{name: string, spend: number, date: string}> = [];
-    
-    activeCampaigns.forEach(campaign => {
+    campaignsData.forEach(campaign => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
         const dateStart = parseISO(insights.date_start);
@@ -69,12 +57,15 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
           campaignCount++;
           
           const spendAmount = parseFloat(insights.spend || '0');
-          if (!isNaN(spendAmount) && spendAmount > 0) {
+          if (!isNaN(spendAmount)) {
             campaignsWithSpend.push({
               name: campaign.name,
               spend: spendAmount,
-              date: dateStart.toISOString()
+              date: dateStart.toISOString(),
+              status: campaign.status || 'UNKNOWN'
             });
+            
+            totalSpent += spendAmount;
           }
           
           console.log(`Processing campaign ${campaign.name}:`, {
@@ -85,10 +76,6 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
             date: dateStart.toISOString(),
             isWithinRange
           });
-          
-          if (!isNaN(spendAmount)) {
-            totalSpent += spendAmount;
-          }
           
           const clicks = parseInt(insights.clicks || '0', 10);
           totalClicks += clicks;
@@ -104,11 +91,14 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
         start: sevenDaysAgo.toISOString(),
         end: now.toISOString()
       },
-      campaigns: campaignsWithSpend
+      campaigns: campaignsWithSpend,
+      totalSpent,
+      totalCampaignsWithSpend: campaignsWithSpend.length
     });
   }
 
-  const spentChange = ((totalSpent - totalSpent * 0.9) / (totalSpent * 0.9)) * 100;
+  const previousSpent = totalSpent * 0.9; // For demo - assume 10% less in previous period
+  const spentChange = ((totalSpent - previousSpent) / previousSpent) * 100;
   const leadsChange = 12;
   const clientsChange = 4;
   const tasksChange = 2;
@@ -124,4 +114,3 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     tasksChange
   };
 };
-

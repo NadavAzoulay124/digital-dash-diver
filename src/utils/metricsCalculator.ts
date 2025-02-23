@@ -39,7 +39,8 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
       campaigns: campaignsData.map(c => ({
         name: c.name,
         status: c.status,
-        hasInsights: Boolean(c.insights?.data?.length)
+        hasInsights: Boolean(c.insights?.data?.length),
+        spendData: c.insights?.data?.[0]?.spend || 'No spend data'
       }))
     });
 
@@ -48,8 +49,14 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     
     console.log('Active campaigns:', {
       totalActive: activeCampaigns.length,
-      activeCampaigns: activeCampaigns.map(c => c.name)
+      activeCampaigns: activeCampaigns.map(c => ({
+        name: c.name,
+        spendData: c.insights?.data?.[0]?.spend || 'No spend data',
+        date: c.insights?.data?.[0]?.date_start || 'No date'
+      }))
     });
+    
+    const campaignsWithSpend: Array<{name: string, spend: number, date: string}> = [];
     
     activeCampaigns.forEach(campaign => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
@@ -57,23 +64,26 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
         const dateStart = parseISO(insights.date_start);
         
         const isWithinRange = isWithinInterval(dateStart, { start: sevenDaysAgo, end: now });
-        console.log(`Checking date range for campaign ${campaign.name}:`, {
-          dateStart: dateStart.toISOString(),
-          sevenDaysAgo: sevenDaysAgo.toISOString(),
-          now: now.toISOString(),
-          isWithinRange
-        });
-
+        
         if (isWithinRange) {
           campaignCount++;
           
           const spendAmount = parseFloat(insights.spend || '0');
+          if (!isNaN(spendAmount) && spendAmount > 0) {
+            campaignsWithSpend.push({
+              name: campaign.name,
+              spend: spendAmount,
+              date: dateStart.toISOString()
+            });
+          }
+          
           console.log(`Processing campaign ${campaign.name}:`, {
             status: campaign.status,
             spend: spendAmount,
             rawSpend: insights.spend,
             clicks: insights.clicks,
-            date: dateStart.toISOString()
+            date: dateStart.toISOString(),
+            isWithinRange
           });
           
           if (!isNaN(spendAmount)) {
@@ -85,30 +95,18 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
           
           const estimatedLeads = Math.round(clicks * 0.02);
           totalLeads += estimatedLeads;
-        } else {
-          console.log(`Campaign ${campaign.name} outside date range:`, {
-            dateStart: dateStart.toISOString(),
-            sevenDaysAgo: sevenDaysAgo.toISOString(),
-            now: now.toISOString()
-          });
         }
-      } else {
-        console.log(`No insights data for campaign ${campaign.name}`);
       }
     });
+    
+    console.log('Campaigns with spend in last 7 days:', {
+      dateRange: {
+        start: sevenDaysAgo.toISOString(),
+        end: now.toISOString()
+      },
+      campaigns: campaignsWithSpend
+    });
   }
-
-  console.log('Final metrics calculation for active campaigns in last 7 days:', {
-    timestamp: new Date().toISOString(),
-    totalSpent,
-    totalClicks,
-    totalLeads,
-    campaignCount,
-    dateRange: {
-      start: sevenDaysAgo.toISOString(),
-      end: now.toISOString()
-    }
-  });
 
   const spentChange = ((totalSpent - totalSpent * 0.9) / (totalSpent * 0.9)) * 100;
   const leadsChange = 12;
@@ -126,3 +124,4 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     tasksChange
   };
 };
+

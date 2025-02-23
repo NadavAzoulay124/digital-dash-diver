@@ -11,6 +11,7 @@ interface RequestBody {
   accessToken: string;
   since?: string;
   until?: string;
+  clientName?: string;
 }
 
 serve(async (req) => {
@@ -26,7 +27,8 @@ serve(async (req) => {
       adAccountId: requestData.adAccountId,
       accessTokenLength: requestData.accessToken?.length || 0,
       since: requestData.since,
-      until: requestData.until
+      until: requestData.until,
+      clientName: requestData.clientName
     });
 
     if (!requestData.adAccountId || !requestData.accessToken) {
@@ -97,4 +99,3 @@ serve(async (req) => {
     );
   }
 });
-

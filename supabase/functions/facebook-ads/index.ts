@@ -40,26 +40,41 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
-    // Construct the insights fields we want to retrieve
-    const insightsFields = 'spend,clicks,impressions';
+    // Define fields for insights
+    const insightsFields = [
+      'spend',
+      'clicks',
+      'impressions'
+    ].join(',');
     
-    // Add campaign status and name to fetch
-    const campaignFields = 'name,objective,status';
+    // Define fields for campaigns
+    const campaignFields = [
+      'name',
+      'objective',
+      'status'
+    ].join(',');
 
-    // Construct Facebook API URL with all necessary parameters
-    const campaignsUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
-    const fields = `${campaignFields}`;
-    const insightsParam = since && until 
-      ? `insights.time_range({"since":"${since}","until":"${until}"}){${insightsFields}}`
-      : `insights{${insightsFields}}`;
+    // Construct the insights time_range parameter
+    const timeRange = since && until ? JSON.stringify({ since, until }) : undefined;
     
-    const params = new URLSearchParams({
-      access_token: accessToken,
-      fields: `${fields},${insightsParam}`
+    // Construct the full URL with parameters
+    const baseUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
+    const params = new URLSearchParams();
+    params.append('access_token', accessToken);
+    
+    // Add fields parameter with proper insights time range
+    const fields = timeRange
+      ? `${campaignFields},insights.time_range(${timeRange}){${insightsFields}}`
+      : `${campaignFields},insights{${insightsFields}}`;
+    
+    params.append('fields', fields);
+
+    const url = `${baseUrl}?${params}`;
+    console.log('Making request to Facebook API:', {
+      url: url.replace(accessToken, '[REDACTED]'),
+      timeRange: timeRange ? JSON.parse(timeRange) : 'default',
+      fields: fields.split(',')
     });
-
-    const url = `${campaignsUrl}?${params}`;
-    console.log('Fetching from URL:', url.replace(accessToken, '[REDACTED]'));
 
     const response = await fetch(url);
     const data = await response.json();
@@ -69,14 +84,14 @@ serve(async (req) => {
       throw new Error(`Facebook API error: ${JSON.stringify(data.error || data)}`);
     }
 
-    // Log the successful response data structure
-    console.log('Facebook API response structure:', {
-      totalCampaigns: data?.data?.length || 0,
-      hasData: !!data?.data,
-      firstCampaign: data?.data?.[0] ? {
+    console.log('Facebook API response summary:', {
+      timestamp: new Date().toISOString(),
+      campaignsCount: data?.data?.length || 0,
+      sampleData: data?.data?.[0] ? {
         name: data.data[0].name,
+        status: data.data[0].status,
         hasInsights: !!data.data[0].insights,
-        insightsData: data.data[0].insights?.data?.[0]
+        insightsSample: data.data[0].insights?.data?.[0]
       } : null
     });
 

@@ -36,7 +36,7 @@ export const MetricsOverview = () => {
           accessToken: selectedFacebookAccount.access_token,
           since: today,
           until: today,
-          clientName: selectedFacebookAccount.client_name // Add client name to filter
+          clientName: selectedFacebookAccount.client_name
         }
       });
 
@@ -45,6 +45,7 @@ export const MetricsOverview = () => {
         throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
       }
 
+      console.log('Response from Facebook API:', response.data);
       return response.data || { data: [] };
     },
     enabled: !!selectedFacebookAccount,
@@ -82,15 +83,28 @@ export const MetricsOverview = () => {
       facebookData.data.forEach(campaign => {
         if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
           const insights = campaign.insights.data[0];
-          totalSpent += parseFloat(insights.spend || '0');
-          totalClicks += parseInt(insights.clicks || '0', 10);
-          totalLeads += parseInt(insights.conversions || '0', 10) || Math.round(totalClicks * 0.02);
+          // Make sure to parse the spend value as a float
+          const spendAmount = parseFloat(insights.spend || '0');
+          console.log(`Campaign ${campaign.name} spend:`, spendAmount);
+          
+          if (!isNaN(spendAmount)) {
+            totalSpent += spendAmount;
+          }
+          
+          const clicks = parseInt(insights.clicks || '0', 10);
+          totalClicks += clicks;
+          
+          // Estimate leads based on clicks with a 2% conversion rate
+          const estimatedLeads = Math.round(clicks * 0.02);
+          totalLeads += estimatedLeads;
         }
       });
     }
 
+    console.log('Final total spent calculation:', totalSpent);
+
     // For demo purposes, simulate percentage changes
-    const spentChange = 15.2;
+    const spentChange = ((totalSpent - totalSpent * 0.9) / (totalSpent * 0.9)) * 100;
     const leadsChange = 12;
     const clientsChange = 4;
     const tasksChange = 2;
@@ -98,8 +112,8 @@ export const MetricsOverview = () => {
     return {
       totalSpent,
       totalLeads,
-      activeClients: 48, // This would come from a different data source
-      openTasks: 24, // This would come from a different data source
+      activeClients: 48,
+      openTasks: 24,
       spentChange,
       leadsChange,
       clientsChange,
@@ -117,7 +131,7 @@ export const MetricsOverview = () => {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         })}`}
-        change={`${metrics.spentChange}%`}
+        change={`${metrics.spentChange.toFixed(1)}%`}
         isPositive={false}
         icon={DollarSign}
       />
@@ -145,4 +159,3 @@ export const MetricsOverview = () => {
     </div>
   );
 };
-

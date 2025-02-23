@@ -7,8 +7,10 @@ import { format, subHours } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
+import { useToast } from "@/components/ui/use-toast";
 
 export const MetricsOverview = () => {
+  const { toast } = useToast();
   const { getSelectedAccount: getSelectedFacebookAccount } = useFacebookAccounts();
   const selectedFacebookAccount = getSelectedFacebookAccount();
 
@@ -23,7 +25,6 @@ export const MetricsOverview = () => {
 
       // Use date with timezone offset to ensure we get full day's data
       const today = new Date();
-      const yesterdayDate = subHours(today, 24);
       const todayStr = format(today, 'yyyy-MM-dd');
       
       console.log('Fetching Facebook campaigns with credentials:', {
@@ -31,6 +32,7 @@ export const MetricsOverview = () => {
         clientName: selectedFacebookAccount.client_name,
         date: todayStr,
         currentTime: today.toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
       });
 
       const response = await supabase.functions.invoke('facebook-ads', {
@@ -40,12 +42,17 @@ export const MetricsOverview = () => {
           since: todayStr,
           until: todayStr,
           clientName: selectedFacebookAccount.client_name,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone // Send local timezone
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
         }
       });
 
       if (response.error) {
         console.error('Facebook edge function error:', response.error);
+        toast({
+          title: "Error fetching Facebook data",
+          description: response.error.message || "Failed to fetch campaign data",
+          variant: "destructive",
+        });
         throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
       }
 
@@ -58,7 +65,8 @@ export const MetricsOverview = () => {
       return response.data || { data: [] };
     },
     enabled: !!selectedFacebookAccount,
-    refetchInterval: 300000, // Refresh every 5 minutes to get latest data
+    refetchInterval: 300000, // Refresh every 5 minutes
+    retry: 1, // Only retry once on failure
   });
 
   if (isFacebookLoading) {
@@ -184,3 +192,4 @@ export const MetricsOverview = () => {
     </div>
   );
 };
+

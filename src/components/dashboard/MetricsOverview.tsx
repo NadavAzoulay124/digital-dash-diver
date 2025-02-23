@@ -3,7 +3,7 @@ import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, subDays } from "date-fns";
+import { format, subDays, parseISO, isWithinInterval } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
@@ -101,50 +101,54 @@ export const MetricsOverview = () => {
     let campaignCount = 0;
     
     const now = new Date();
-    const yesterday = subDays(now, 1);
-    const last7Days = subDays(now, 7);
+    const sevenDaysAgo = subDays(now, 7);
     
-    const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
-    const last7DaysStr = format(last7Days, 'yyyy-MM-dd');
-
     // Calculate Facebook metrics
     if (facebookData?.data && Array.isArray(facebookData.data)) {
       facebookData.data.forEach(campaign => {
         if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
-          campaignCount++;
           const insights = campaign.insights.data[0];
-          const dateStart = insights.date_start;
+          const dateStart = parseISO(insights.date_start);
           
-          // Make sure to parse the spend value as a float
-          const spendAmount = parseFloat(insights.spend || '0');
-          console.log(`Campaign ${campaign.name}:`, {
-            spend: spendAmount,
-            rawSpend: insights.spend,
-            clicks: insights.clicks,
-            status: campaign.status,
-            date: dateStart
-          });
-          
-          if (!isNaN(spendAmount)) {
-            totalSpent += spendAmount;
+          // Only include data from the last 7 days
+          if (isWithinInterval(dateStart, { start: sevenDaysAgo, end: now })) {
+            campaignCount++;
+            
+            // Make sure to parse the spend value as a float
+            const spendAmount = parseFloat(insights.spend || '0');
+            console.log(`Campaign ${campaign.name} within 7 days:`, {
+              spend: spendAmount,
+              rawSpend: insights.spend,
+              clicks: insights.clicks,
+              status: campaign.status,
+              date: dateStart.toISOString()
+            });
+            
+            if (!isNaN(spendAmount)) {
+              totalSpent += spendAmount;
+            }
+            
+            const clicks = parseInt(insights.clicks || '0', 10);
+            totalClicks += clicks;
+            
+            // Estimate leads based on clicks with a 2% conversion rate
+            const estimatedLeads = Math.round(clicks * 0.02);
+            totalLeads += estimatedLeads;
           }
-          
-          const clicks = parseInt(insights.clicks || '0', 10);
-          totalClicks += clicks;
-          
-          // Estimate leads based on clicks with a 2% conversion rate
-          const estimatedLeads = Math.round(clicks * 0.02);
-          totalLeads += estimatedLeads;
         }
       });
     }
 
-    console.log('Metrics calculation summary:', {
+    console.log('Final metrics calculation for last 7 days:', {
       timestamp: new Date().toISOString(),
       totalSpent,
       totalClicks,
       totalLeads,
-      campaignCount
+      campaignCount,
+      dateRange: {
+        start: sevenDaysAgo.toISOString(),
+        end: now.toISOString()
+      }
     });
 
     // For demo purposes, simulate percentage changes

@@ -28,7 +28,8 @@ serve(async (req) => {
       hasAccessToken: !!requestData.accessToken,
       since: requestData.since,
       until: requestData.until,
-      clientName: requestData.clientName
+      clientName: requestData.clientName,
+      timestamp: new Date().toISOString()
     });
 
     if (!requestData.adAccountId || !requestData.accessToken) {
@@ -44,7 +45,9 @@ serve(async (req) => {
     const insightsFields = [
       'spend',
       'clicks',
-      'impressions'
+      'impressions',
+      'date_start',
+      'date_stop'
     ].join(',');
     
     // Define fields for campaigns
@@ -54,17 +57,23 @@ serve(async (req) => {
       'status'
     ].join(',');
 
-    // Construct the insights time_range parameter
-    const timeRange = since && until ? JSON.stringify({ since, until }) : undefined;
-    
-    // Construct the full URL with parameters
+    // Construct the base URL
     const baseUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
     const params = new URLSearchParams();
     params.append('access_token', accessToken);
-    
-    // Add fields parameter with proper insights time range
-    const fields = timeRange
-      ? `${campaignFields},insights.time_range(${timeRange}){${insightsFields}}`
+
+    // Construct time range object for insights
+    let timeRangeStr = '';
+    if (since && until) {
+      timeRangeStr = JSON.stringify({
+        since,
+        until
+      });
+    }
+
+    // Add fields parameter
+    const fields = timeRangeStr
+      ? `${campaignFields},insights.time_range(${timeRangeStr}){${insightsFields}}`
       : `${campaignFields},insights{${insightsFields}}`;
     
     params.append('fields', fields);
@@ -72,16 +81,30 @@ serve(async (req) => {
     const url = `${baseUrl}?${params}`;
     console.log('Making request to Facebook API:', {
       url: url.replace(accessToken, '[REDACTED]'),
-      timeRange: timeRange ? JSON.parse(timeRange) : 'default',
-      fields: fields.split(',')
+      timeRange: timeRangeStr ? JSON.parse(timeRangeStr) : 'default',
+      fields: fields.split(','),
+      timestamp: new Date().toISOString()
     });
 
     const response = await fetch(url);
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Facebook API error:', data);
+      console.error('Facebook API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: data.error || data,
+        timestamp: new Date().toISOString()
+      });
       throw new Error(`Facebook API error: ${JSON.stringify(data.error || data)}`);
+    }
+
+    if (data.error) {
+      console.error('Facebook API returned error in response body:', {
+        error: data.error,
+        timestamp: new Date().toISOString()
+      });
+      throw new Error(`Facebook API error: ${JSON.stringify(data.error)}`);
     }
 
     console.log('Facebook API response summary:', {
@@ -100,12 +123,17 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in facebook-ads function:', error);
+    console.error('Error in facebook-ads function:', {
+      error: error.message || error,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
     return new Response(
       JSON.stringify({
         error: {
           message: error.message || 'Internal server error',
-          details: error.toString(),
+          details: error.toString()
         }
       }),
       { 

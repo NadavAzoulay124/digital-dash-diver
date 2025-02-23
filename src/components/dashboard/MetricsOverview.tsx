@@ -3,7 +3,7 @@ import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, subHours } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
@@ -21,22 +21,26 @@ export const MetricsOverview = () => {
         return { data: [] };
       }
 
-      // Use today's date for initial metrics
-      const today = format(new Date(), 'yyyy-MM-dd');
+      // Use date with timezone offset to ensure we get full day's data
+      const today = new Date();
+      const yesterdayDate = subHours(today, 24);
+      const todayStr = format(today, 'yyyy-MM-dd');
       
       console.log('Fetching Facebook campaigns with credentials:', {
         adAccountId: selectedFacebookAccount.ad_account_id,
         clientName: selectedFacebookAccount.client_name,
-        date: today
+        date: todayStr,
+        currentTime: today.toISOString(),
       });
 
       const response = await supabase.functions.invoke('facebook-ads', {
         body: { 
           adAccountId: selectedFacebookAccount.ad_account_id,
           accessToken: selectedFacebookAccount.access_token,
-          since: today,
-          until: today,
-          clientName: selectedFacebookAccount.client_name
+          since: todayStr,
+          until: todayStr,
+          clientName: selectedFacebookAccount.client_name,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone // Send local timezone
         }
       });
 
@@ -45,10 +49,16 @@ export const MetricsOverview = () => {
         throw new Error(response.error.message || 'Failed to fetch Facebook campaigns');
       }
 
-      console.log('Response from Facebook API:', response.data);
+      console.log('Response from Facebook API:', {
+        timestamp: new Date().toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        data: response.data
+      });
+      
       return response.data || { data: [] };
     },
     enabled: !!selectedFacebookAccount,
+    refetchInterval: 300000, // Refresh every 5 minutes to get latest data
   });
 
   if (isFacebookLoading) {
@@ -77,15 +87,23 @@ export const MetricsOverview = () => {
     let totalSpent = 0;
     let totalLeads = 0;
     let totalClicks = 0;
+    let campaignCount = 0;
 
     // Calculate Facebook metrics
     if (facebookData?.data && Array.isArray(facebookData.data)) {
       facebookData.data.forEach(campaign => {
         if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
+          campaignCount++;
           const insights = campaign.insights.data[0];
           // Make sure to parse the spend value as a float
           const spendAmount = parseFloat(insights.spend || '0');
-          console.log(`Campaign ${campaign.name} spend:`, spendAmount);
+          console.log(`Campaign ${campaign.name}:`, {
+            spend: spendAmount,
+            rawSpend: insights.spend,
+            clicks: insights.clicks,
+            status: campaign.status,
+            date: insights.date_start
+          });
           
           if (!isNaN(spendAmount)) {
             totalSpent += spendAmount;
@@ -101,7 +119,14 @@ export const MetricsOverview = () => {
       });
     }
 
-    console.log('Final total spent calculation:', totalSpent);
+    console.log('Metrics calculation summary:', {
+      timestamp: new Date().toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      totalSpent,
+      totalClicks,
+      totalLeads,
+      campaignCount
+    });
 
     // For demo purposes, simulate percentage changes
     const spentChange = ((totalSpent - totalSpent * 0.9) / (totalSpent * 0.9)) * 100;

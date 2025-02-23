@@ -12,6 +12,7 @@ interface RequestBody {
   since?: string;
   until?: string;
   clientName?: string;
+  timezone?: string;
 }
 
 serve(async (req) => {
@@ -28,7 +29,8 @@ serve(async (req) => {
       accessTokenLength: requestData.accessToken?.length || 0,
       since: requestData.since,
       until: requestData.until,
-      clientName: requestData.clientName
+      clientName: requestData.clientName,
+      timezone: requestData.timezone
     });
 
     if (!requestData.adAccountId || !requestData.accessToken) {
@@ -36,25 +38,24 @@ serve(async (req) => {
       throw new Error('Missing required credentials');
     }
 
-    const { adAccountId, accessToken, since, until } = requestData;
+    const { adAccountId, accessToken, since, until, timezone } = requestData;
 
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
-
-    // Get today's date if no date range is provided
-    const today = new Date().toISOString().split('T')[0];
     
     // Construct time range for insights
     const timeRange = {
-      since: since || today,
-      until: until || today
+      since: since,
+      until: until,
+      timezone_type: 'custom',
+      timezone: timezone || 'UTC'
     };
     
     console.log('Using time range:', timeRange);
     
     // Fetch campaigns with insights
     const campaignsUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
-    const insightsFields = 'impressions,clicks,spend,conversions';
+    const insightsFields = 'impressions,clicks,spend,date_start,date_stop';
     
     // Add time_range parameter to insights query
     const campaignFields = `name,objective,status,insights.time_range(${JSON.stringify(timeRange)}){${insightsFields}}`;
@@ -79,9 +80,9 @@ serve(async (req) => {
       dataLength: data?.data?.length || 0,
       firstCampaign: data?.data?.[0] ? {
         name: data.data[0].name,
-        hasInsights: !!data.data[0].insights
-      } : null,
-      timeRange
+        hasInsights: !!data.data[0].insights,
+        timeRange
+      } : null
     });
 
     return new Response(JSON.stringify(data), {

@@ -7,14 +7,10 @@ import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
-import { useGoogleAdsAccounts } from "@/hooks/useGoogleAdsAccounts";
 
 export const MetricsOverview = () => {
   const { getSelectedAccount: getSelectedFacebookAccount } = useFacebookAccounts();
-  const { getSelectedAccount: getSelectedGoogleAccount } = useGoogleAdsAccounts();
-  
   const selectedFacebookAccount = getSelectedFacebookAccount();
-  const selectedGoogleAccount = getSelectedGoogleAccount();
 
   // Query Facebook campaigns data
   const { data: facebookData, isError: isFacebookError, isLoading: isFacebookLoading } = useQuery({
@@ -52,42 +48,28 @@ export const MetricsOverview = () => {
     enabled: !!selectedFacebookAccount,
   });
 
-  // Query Google Ads data
-  const { data: googleData, isError: isGoogleError, isLoading: isGoogleLoading } = useQuery({
-    queryKey: ['google-ads-metrics', selectedGoogleAccount?.id],
-    queryFn: async () => {
-      if (!selectedGoogleAccount) {
-        console.log('No Google Ads account selected');
-        return { data: [] };
-      }
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-32 bg-card animate-pulse rounded-lg" />
+        ))}
+      </div>
+    );
+  }
 
-      console.log('Fetching Google Ads metrics with credentials:', {
-        customerId: selectedGoogleAccount.customer_id
-      });
+  if (isFacebookError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load campaign metrics. Please check your Facebook connection.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
-      const response = await supabase.functions.invoke('google-ads-metrics', {
-        body: {
-          customerId: selectedGoogleAccount.customer_id,
-          clientId: selectedGoogleAccount.client_id,
-          developerToken: selectedGoogleAccount.developer_token,
-          refreshToken: selectedGoogleAccount.refresh_token
-        }
-      });
-
-      if (response.error) {
-        console.error('Google Ads edge function error:', response.error);
-        throw new Error(response.error.message || 'Failed to fetch Google Ads metrics');
-      }
-
-      return response.data || { data: [] };
-    },
-    enabled: !!selectedGoogleAccount,
-  });
-
-  const isLoading = isFacebookLoading || isGoogleLoading;
-  const isError = isFacebookError || isGoogleError;
-
-  // Calculate combined metrics from both platforms
+  // Calculate metrics from Facebook data
   const calculateMetrics = () => {
     let totalSpent = 0;
     let totalLeads = 0;
@@ -102,15 +84,6 @@ export const MetricsOverview = () => {
           totalClicks += parseInt(insights.clicks || '0', 10);
           totalLeads += parseInt(insights.conversions || '0', 10) || Math.round(totalClicks * 0.02);
         }
-      });
-    }
-
-    // Add Google Ads metrics
-    if (googleData?.data && Array.isArray(googleData.data)) {
-      googleData.data.forEach(campaign => {
-        totalSpent += parseFloat(campaign.metrics?.cost_micros || '0') / 1000000;
-        totalClicks += parseInt(campaign.metrics?.clicks || '0', 10);
-        totalLeads += parseInt(campaign.metrics?.conversions || '0', 10) || Math.round(totalClicks * 0.02);
       });
     }
 
@@ -131,27 +104,6 @@ export const MetricsOverview = () => {
       tasksChange
     };
   };
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-32 bg-card animate-pulse rounded-lg" />
-        ))}
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Failed to load campaign metrics. Please check your ad platform connections.
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   const metrics = calculateMetrics();
 

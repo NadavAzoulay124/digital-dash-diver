@@ -1,19 +1,16 @@
 
-import { useState } from 'react';
 import { GoogleAdsAccount } from '@/components/dashboard/google/types';
 
+// This is just a stub to maintain type compatibility
+// The actual Google Ads integration has been removed
 export const useGoogleAdsAccounts = () => {
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-
   const getSelectedAccount = (): GoogleAdsAccount | undefined => {
-    // This is a stub - normally you would fetch from your actual accounts list
-    // For now, returning undefined since we don't have a working Google integration
     return undefined;
   };
 
   return {
-    selectedAccountId,
-    setSelectedAccountId,
+    selectedAccountId: null,
+    setSelectedAccountId: () => {},
     getSelectedAccount,
   };
 };

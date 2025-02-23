@@ -11,10 +11,6 @@ import { ContractCreation } from "@/components/dashboard/ContractCreation";
 import { ContractsList } from "@/components/dashboard/contract/ContractsList";
 import { TaskBoard } from "@/components/dashboard/TaskBoard";
 import { ignoredTasks } from "@/data/mockTasks";
-import { GoogleConnectForm } from "@/components/dashboard/google/GoogleConnectForm";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },
@@ -26,66 +22,9 @@ const mockFinancialData = [
   { month: "Jul", income: 3490, expenses: 4300 },
 ];
 
-const GoogleOAuthCallback = () => {
-  const [searchParams] = useSearchParams();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleCallback = async () => {
-      const code = searchParams.get("code");
-      if (!code) {
-        toast({
-          title: "Error",
-          description: "No authorization code received",
-          variant: "destructive",
-        });
-        navigate("/agency");
-        return;
-      }
-
-      try {
-        console.log("Exchanging code for tokens...");
-        const response = await supabase.functions.invoke('google-ads-auth', {
-          body: { code }
-        });
-
-        if (response.error) {
-          console.error('OAuth callback error:', response.error);
-          throw new Error(response.error.message);
-        }
-
-        console.log("OAuth callback response:", response.data);
-        
-        toast({
-          title: "Success",
-          description: "Successfully connected to Google Ads",
-        });
-      } catch (error) {
-        console.error("OAuth callback error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to complete Google Ads connection",
-          variant: "destructive",
-        });
-      } finally {
-        navigate("/agency");
-      }
-    };
-
-    handleCallback();
-  }, [searchParams, toast, navigate]);
-
-  return null;
-};
-
 const AgencyDashboard = () => {
   return (
     <Routes>
-      <Route
-        path="oauth/callback"
-        element={<GoogleOAuthCallback />}
-      />
       <Route
         index
         element={
@@ -95,7 +34,6 @@ const AgencyDashboard = () => {
               <FinancialOverview data={mockFinancialData} />
             </div>
             <FacebookConnectForm />
-            <GoogleConnectForm />
             <div className="grid gap-6 md:grid-cols-2">
               <CampaignChart />
               <CampaignInsights />

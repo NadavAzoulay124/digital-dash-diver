@@ -3,7 +3,7 @@ import { Users, DollarSign, Target, ListChecks } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useFacebookAccounts } from "@/hooks/useFacebookAccounts";
@@ -24,22 +24,28 @@ export const MetricsOverview = () => {
       }
 
       // Use date with timezone offset to ensure we get full day's data
-      const today = new Date();
-      const todayStr = format(today, 'yyyy-MM-dd');
+      const endDate = new Date();
+      const startDate = subDays(endDate, 30); // Fetch last 30 days of data
+      
+      const endDateStr = format(endDate, 'yyyy-MM-dd');
+      const startDateStr = format(startDate, 'yyyy-MM-dd');
       
       console.log('Fetching Facebook campaigns with credentials:', {
         adAccountId: selectedFacebookAccount.ad_account_id,
         clientName: selectedFacebookAccount.client_name,
-        date: todayStr,
-        currentTime: today.toISOString()
+        dateRange: {
+          since: startDateStr,
+          until: endDateStr,
+        },
+        currentTime: endDate.toISOString()
       });
 
       const response = await supabase.functions.invoke('facebook-ads', {
         body: { 
           adAccountId: selectedFacebookAccount.ad_account_id,
           accessToken: selectedFacebookAccount.access_token,
-          since: todayStr,
-          until: todayStr,
+          since: startDateStr,
+          until: endDateStr,
           clientName: selectedFacebookAccount.client_name
         }
       });
@@ -93,6 +99,13 @@ export const MetricsOverview = () => {
     let totalLeads = 0;
     let totalClicks = 0;
     let campaignCount = 0;
+    
+    const now = new Date();
+    const yesterday = subDays(now, 1);
+    const last7Days = subDays(now, 7);
+    
+    const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+    const last7DaysStr = format(last7Days, 'yyyy-MM-dd');
 
     // Calculate Facebook metrics
     if (facebookData?.data && Array.isArray(facebookData.data)) {
@@ -100,6 +113,8 @@ export const MetricsOverview = () => {
         if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
           campaignCount++;
           const insights = campaign.insights.data[0];
+          const dateStart = insights.date_start;
+          
           // Make sure to parse the spend value as a float
           const spendAmount = parseFloat(insights.spend || '0');
           console.log(`Campaign ${campaign.name}:`, {
@@ -107,7 +122,7 @@ export const MetricsOverview = () => {
             rawSpend: insights.spend,
             clicks: insights.clicks,
             status: campaign.status,
-            date: insights.date_start
+            date: dateStart
           });
           
           if (!isNaN(spendAmount)) {

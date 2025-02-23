@@ -26,6 +26,7 @@ export const MetricsOverview = () => {
       
       console.log('Fetching Facebook campaigns with credentials:', {
         adAccountId: selectedFacebookAccount.ad_account_id,
+        clientName: selectedFacebookAccount.client_name,
         date: today
       });
 
@@ -34,7 +35,8 @@ export const MetricsOverview = () => {
           adAccountId: selectedFacebookAccount.ad_account_id,
           accessToken: selectedFacebookAccount.access_token,
           since: today,
-          until: today
+          until: today,
+          clientName: selectedFacebookAccount.client_name // Add client name to filter
         }
       });
 
@@ -143,3 +145,4 @@ export const MetricsOverview = () => {
     </div>
   );
 };
+

@@ -1,3 +1,4 @@
+
 import { Routes, Route, useSearchParams, useNavigate } from "react-router-dom";
 import { FacebookConnectForm } from "@/components/dashboard/facebook/FacebookConnectForm";
 import { CampaignInsights } from "@/components/dashboard/CampaignInsights";
@@ -13,6 +14,7 @@ import { ignoredTasks } from "@/data/mockTasks";
 import { GoogleConnectForm } from "@/components/dashboard/google/GoogleConnectForm";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const mockFinancialData = [
   { month: "Jan", income: 4000, expenses: 2400 },

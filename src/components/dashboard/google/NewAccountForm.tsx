@@ -44,11 +44,20 @@ export const NewAccountForm = ({ onSuccess }: NewAccountFormProps) => {
 
   const handleOAuthClick = async () => {
     try {
-      const response = await fetch("/api/functions/v1/google-ads-auth");
-      const { url } = await response.json();
-      window.location.href = url;
+      const { data, error } = await supabase.functions.invoke('google-ads-auth');
+      
+      if (error) {
+        console.error('Error initiating OAuth:', error);
+        throw error;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No auth URL returned');
+      }
     } catch (error) {
-      console.error("Error initiating OAuth:", error);
+      console.error('Error initiating OAuth:', error);
       toast({
         title: "Error",
         description: "Failed to start Google OAuth flow",

@@ -1,15 +1,14 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-
-const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
-const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const REDIRECT_URI = 'https://000c9743-e967-4e92-8c88-f6aa6df43947.lovableproject.com/agency/oauth/callback';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Content-Type': 'application/json'
 };
+
+const GOOGLE_OAUTH_CLIENT_ID = Deno.env.get('GOOGLE_OAUTH_CLIENT_ID') || '';
+const GOOGLE_OAUTH_CLIENT_SECRET = Deno.env.get('GOOGLE_OAUTH_CLIENT_SECRET') || '';
+const REDIRECT_URI = Deno.env.get('GOOGLE_OAUTH_REDIRECT_URI') || '';
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -18,84 +17,98 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const code = url.searchParams.get('code');
-    
-    // If there's no code, we start the OAuth flow
-    if (!code) {
-      const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-      if (!clientId) {
-        throw new Error('GOOGLE_CLIENT_ID is not set');
-      }
+    if (req.method === 'GET') {
+      // OAuth 2.0 configuration
+      const scope = encodeURIComponent('https://www.googleapis.com/auth/adwords');
+      const responseType = 'code';
+      const accessType = 'offline';
+      const prompt = 'consent';
 
-      console.log('Starting OAuth flow...');
-      
-      const state = crypto.randomUUID();
-      const params = new URLSearchParams({
-        client_id: clientId,
-        redirect_uri: REDIRECT_URI,
-        response_type: 'code',
-        scope: 'https://www.googleapis.com/auth/adwords',
-        access_type: 'offline',
-        state: state,
-        prompt: 'consent'
-      });
+      // Construct the authorization URL
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${GOOGLE_OAUTH_CLIENT_ID}&` +
+        `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
+        `response_type=${responseType}&` +
+        `scope=${scope}&` +
+        `access_type=${accessType}&` +
+        `prompt=${prompt}`;
+
+      console.log('Generated auth URL:', authUrl);
 
       return new Response(
-        JSON.stringify({ url: `${GOOGLE_OAUTH_URL}?${params.toString()}` }),
-        { headers: corsHeaders }
+        JSON.stringify({ url: authUrl }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    } 
+
+    // Handle token exchange when receiving the authorization code
+    if (req.method === 'POST') {
+      const { code } = await req.json();
+
+      if (!code) {
+        throw new Error('No authorization code provided');
+      }
+
+      console.log('Exchanging code for tokens:', code);
+
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          code,
+          client_id: GOOGLE_OAUTH_CLIENT_ID,
+          client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
+          redirect_uri: REDIRECT_URI,
+          grant_type: 'authorization_code',
+        }),
+      });
+
+      const tokenData = await tokenResponse.json();
+
+      if (!tokenResponse.ok) {
+        console.error('Token exchange error:', tokenData);
+        throw new Error('Failed to exchange authorization code for tokens');
+      }
+
+      return new Response(
+        JSON.stringify(tokenData),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        }
       );
     }
 
-    // Handle the OAuth callback
-    console.log('Received OAuth callback with code');
-    
-    const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-    const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
-    
-    if (!clientId || !clientSecret) {
-      throw new Error('Missing Google OAuth credentials');
-    }
-
-    // Exchange the code for tokens
-    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        code,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: REDIRECT_URI,
-        grant_type: 'authorization_code',
-      }),
-    });
-
-    const tokens = await tokenResponse.json();
-    
-    if (!tokenResponse.ok) {
-      console.error('Token exchange failed:', tokens);
-      throw new Error('Failed to exchange code for tokens');
-    }
-
-    console.log('Successfully obtained tokens');
-
     return new Response(
-      JSON.stringify({ 
-        refresh_token: tokens.refresh_token,
-        access_token: tokens.access_token 
-      }),
-      { headers: corsHeaders }
+      JSON.stringify({ error: 'Method not allowed' }),
+      { 
+        status: 405,
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      }
     );
 
   } catch (error) {
-    console.error('Error in google-ads-auth function:', error);
+    console.error('Error in Google Ads auth function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        headers: corsHeaders,
-        status: 500 
+        status: 500,
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
   }

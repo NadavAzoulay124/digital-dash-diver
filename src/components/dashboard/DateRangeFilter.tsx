@@ -50,20 +50,6 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
       }),
     },
     {
-      label: "Last 7 days",
-      getValue: () => ({
-        from: subDays(new Date(), 6),
-        to: new Date(),
-      }),
-    },
-    {
-      label: "Last 30 days",
-      getValue: () => ({
-        from: subDays(new Date(), 29),
-        to: new Date(),
-      }),
-    },
-    {
       label: "This week",
       getValue: () => ({
         from: startOfWeek(new Date()),
@@ -75,6 +61,13 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
       getValue: () => ({
         from: startOfMonth(new Date()),
         to: endOfMonth(new Date()),
+      }),
+    },
+    {
+      label: "Last month",
+      getValue: () => ({
+        from: startOfMonth(subMonths(new Date(), 1)),
+        to: endOfMonth(subMonths(new Date(), 1)),
       }),
     },
   ];
@@ -154,3 +147,4 @@ export const DateRangeFilter = ({ onDateChange }: DateRangeFilterProps) => {
     </Popover>
   );
 };
+

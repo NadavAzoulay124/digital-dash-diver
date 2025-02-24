@@ -1,5 +1,5 @@
 
-import { Users, DollarSign, MousePointer, Eye } from "lucide-react";
+import { DollarSign, MousePointer, Eye } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -27,6 +27,16 @@ export const MetricsOverview = () => {
 
   const metrics = calculateMetrics(facebookData?.data || []);
 
+  const formatValue = (value: number) => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K`;
+    } else {
+      return value.toLocaleString();
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <MetricCard
@@ -36,21 +46,21 @@ export const MetricsOverview = () => {
           maximumFractionDigits: 2
         })}`}
         change={`${metrics.spentChange.toFixed(1)}%`}
-        isPositive={false}
+        isPositive={metrics.spentChange <= 0} // For spend, lower is better
         icon={DollarSign}
       />
       <MetricCard
         title="Total Clicks"
-        value={metrics.totalClicks?.toString() || "0"}
-        change={`${metrics.clicksChange || 0}%`}
-        isPositive={true}
+        value={formatValue(metrics.totalClicks)}
+        change={`${metrics.clicksChange.toFixed(1)}%`}
+        isPositive={metrics.clicksChange > 0}
         icon={MousePointer}
       />
       <MetricCard
         title="Total Impressions"
-        value={metrics.totalImpressions?.toString() || "0"}
-        change={`${metrics.impressionsChange || 0}%`}
-        isPositive={true}
+        value={formatValue(metrics.totalImpressions)}
+        change={`${metrics.impressionsChange.toFixed(1)}%`}
+        isPositive={metrics.impressionsChange > 0}
         icon={Eye}
       />
     </div>

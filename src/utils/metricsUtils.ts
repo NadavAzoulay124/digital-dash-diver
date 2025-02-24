@@ -53,13 +53,13 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
 
     sortedInsights.forEach((insight) => {
       const spent = Number(insight.spend) || 0;
-      // Use actual results from the insights data instead of calculating from clicks
-      const results = insight.website_purchases || 0;
+      // Get actual website purchases from insights
+      const results = Number(insight.website_purchase) || 0;
       
       if (isNaN(spent) || isNaN(results)) {
         console.warn('Invalid numerical values in insight:', {
           spend: insight.spend,
-          results: insight.website_purchases
+          results: insight.website_purchase
         });
         return;
       }
@@ -115,3 +115,4 @@ export const calculatePercentageChange = (current: number, previous: number): nu
   if (previous === 0) return current > 0 ? 100 : 0;
   return ((current - previous) / previous) * 100;
 };
+

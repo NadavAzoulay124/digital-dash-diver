@@ -38,6 +38,7 @@ export interface Campaign {
       impressions?: string;
       date_start?: string;
       date_stop?: string;
+      website_purchase?: number;
     }>;
   };
 }

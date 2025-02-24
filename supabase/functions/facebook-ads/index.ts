@@ -41,11 +41,12 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
-    // Define fields for insights
+    // Define fields for insights - added frequency field
     const insightsFields = [
       'spend',
       'clicks',
       'impressions',
+      'frequency',
       'date_start',
       'date_stop'
     ].join(',');

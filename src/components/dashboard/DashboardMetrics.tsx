@@ -1,25 +1,26 @@
 
-import { DollarSign, Target, TrendingUp } from "lucide-react";
+import { DollarSign, MousePointer, TrendingUp, Activity } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { calculatePercentageChange } from "@/utils/metricsUtils";
 
 interface DashboardMetricsProps {
   metrics: {
     totalSpent: number;
-    totalResults: number;
-    conversionRate: number;
-    costPerResult: number;
+    totalClicks: number;
+    costPerClick: number;
+    averageFrequency: number;
     previousTotalSpent: number;
-    previousTotalResults: number;
-    previousConversionRate: number;
-    previousCostPerResult: number;
+    previousTotalClicks: number;
+    previousCostPerClick: number;
+    previousAverageFrequency: number;
   };
 }
 
 export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
   const spentChange = calculatePercentageChange(metrics.totalSpent, metrics.previousTotalSpent);
-  const costPerResultChange = calculatePercentageChange(metrics.costPerResult, metrics.previousCostPerResult);
-  const conversionChange = calculatePercentageChange(metrics.conversionRate, metrics.previousConversionRate);
+  const clicksChange = calculatePercentageChange(metrics.totalClicks, metrics.previousTotalClicks);
+  const cpcChange = calculatePercentageChange(metrics.costPerClick, metrics.previousCostPerClick);
+  const frequencyChange = calculatePercentageChange(metrics.averageFrequency, metrics.previousAverageFrequency);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -31,18 +32,25 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
         icon={DollarSign}
       />
       <MetricCard
-        title="Cost per Result"
-        value={`$${metrics.costPerResult.toFixed(2)}`}
-        change={`${costPerResultChange.toFixed(1)}%`}
-        isPositive={costPerResultChange <= 0}
+        title="Total Clicks"
+        value={metrics.totalClicks.toLocaleString()}
+        change={`${clicksChange.toFixed(1)}%`}
+        isPositive={clicksChange >= 0}
+        icon={MousePointer}
+      />
+      <MetricCard
+        title="Cost per Click"
+        value={`$${metrics.costPerClick.toFixed(2)}`}
+        change={`${cpcChange.toFixed(1)}%`}
+        isPositive={cpcChange <= 0}
         icon={TrendingUp}
       />
       <MetricCard
-        title="Conversion Rate"
-        value={`${metrics.conversionRate.toFixed(2)}%`}
-        change={`${conversionChange.toFixed(1)}%`}
-        isPositive={conversionChange >= 0}
-        icon={Target}
+        title="Avg. Frequency"
+        value={metrics.averageFrequency.toFixed(2)}
+        change={`${frequencyChange.toFixed(1)}%`}
+        isPositive={frequencyChange >= 0}
+        icon={Activity}
       />
     </div>
   );

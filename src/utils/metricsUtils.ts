@@ -53,33 +53,14 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
       const impressions = parseInt(insight.impressions || '0', 10);
       let leads = 0;
 
-      // Check various places where lead data might be stored
-      if (campaign.objective?.toLowerCase().includes('lead')) {
-        // For lead generation campaigns, treat clicks as potential leads if no other lead data is available
-        leads = clicks;
-        console.log('Lead generation campaign - using clicks as leads:', leads);
-      }
-
-      // Check cost_per_action_type for lead costs
-      if (insight.cost_per_action_type) {
-        const leadActions = insight.cost_per_action_type.filter(action => 
-          action.action_type?.toLowerCase().includes('lead') ||
-          action.action_type?.toLowerCase().includes('form')
-        );
-        if (leadActions.length > 0) {
-          console.log('Found lead cost actions:', leadActions);
-        }
-      }
-
-      // Check standard actions array
+      // Only look for leads in the actions array
       if (insight.actions && Array.isArray(insight.actions)) {
-        console.log('Checking actions array:', insight.actions);
+        console.log('Checking actions array for leads:', insight.actions);
         
         const leadActions = insight.actions.filter(action => 
           action.action_type?.toLowerCase().includes('lead') ||
-          action.action_type?.toLowerCase().includes('form') ||
-          action.action_type?.toLowerCase().includes('contact') ||
-          action.action_type?.toLowerCase().includes('submit')
+          action.action_type?.toLowerCase() === 'onsite_conversion.lead_grouped' ||
+          action.action_type?.toLowerCase() === 'leadgen.other'
         );
 
         if (leadActions.length > 0) {
@@ -142,3 +123,4 @@ export const calculatePercentageChange = (current: number, previous: number): nu
   if (previous === 0) return current > 0 ? 100 : 0;
   return ((current - previous) / previous) * 100;
 };
+

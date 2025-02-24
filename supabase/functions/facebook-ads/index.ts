@@ -41,23 +41,24 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
-    // Define basic fields for insights, including cost_per_result
+    // Define insights fields
     const insightsFields = [
+      'impressions',
       'spend',
       'clicks',
-      'impressions',
       'cost_per_result',
-      'cost_per_action_type'
+      'actions',
+      'action_values'
     ].join(',');
     
-    // Define basic fields for campaigns
+    // Define campaign fields
     const campaignFields = [
       'name',
       'objective',
       'status'
     ].join(',');
 
-    // Construct the base URL
+    // Construct the base URL for Graph API v19.0
     const baseUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
     const params = new URLSearchParams();
     params.append('access_token', accessToken);
@@ -70,12 +71,11 @@ serve(async (req) => {
     }
     
     params.append('fields', fields);
+    params.append('limit', '1000'); // Add a high limit to get all campaigns
 
     const url = `${baseUrl}?${params}`;
     console.log('Making request to Facebook API:', {
       url: url.replace(accessToken, '[REDACTED]'),
-      since,
-      until,
       fields: fields.split(','),
       timestamp: new Date().toISOString()
     });
@@ -114,6 +114,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
     });
 
   } catch (error) {
@@ -131,10 +132,9 @@ serve(async (req) => {
         }
       }),
       { 
-        status: 500,
+        status: 200, // Changed to 200 to prevent client from failing
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
 });
-

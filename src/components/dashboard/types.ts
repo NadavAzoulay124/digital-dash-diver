@@ -41,6 +41,7 @@ export interface Campaign {
       website_purchase?: number;
       cpc?: string;
       frequency?: string;
+      cost_per_result?: string;
       cost_per_action_type?: Array<{
         action_type: string;
         value: string;

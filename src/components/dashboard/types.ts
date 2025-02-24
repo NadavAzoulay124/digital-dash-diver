@@ -39,7 +39,16 @@ export interface Campaign {
       date_start?: string;
       date_stop?: string;
       website_purchase?: number;
+      cpc?: string;
+      frequency?: string;
+      cost_per_action_type?: Array<{
+        action_type: string;
+        value: string;
+      }>;
+      actions?: Array<{
+        action_type: string;
+        value: string;
+      }>;
     }>;
   };
 }
-

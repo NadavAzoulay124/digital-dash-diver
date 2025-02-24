@@ -54,8 +54,12 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
       if (!isNaN(spent)) totalSpent += spent;
       if (!isNaN(clicks)) totalClicks += clicks;
       if (!isNaN(impressions)) totalImpressions += impressions;
-      if (!isNaN(frequency) && frequency > 0) {
-        totalFrequency += frequency;
+
+      // Calculate frequency manually if not provided by API
+      const calculatedFrequency = impressions > 0 ? impressions / (impressions / frequency || 1) : 0;
+      
+      if (calculatedFrequency > 0) {
+        totalFrequency += calculatedFrequency;
         campaignsWithFrequency++;
       }
 
@@ -63,7 +67,8 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
         spent,
         clicks,
         impressions,
-        frequency,
+        rawFrequency: insight.frequency,
+        calculatedFrequency,
         dateRange: {
           start: insight.date_start,
           end: insight.date_stop
@@ -73,7 +78,7 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   });
 
   const costPerClick = totalClicks > 0 ? totalSpent / totalClicks : 0;
-  const averageFrequency = campaignsWithFrequency > 0 ? totalFrequency / campaignsWithFrequency : 0;
+  const averageFrequency = totalImpressions > 0 ? totalImpressions / (totalImpressions / totalFrequency || 1) : 0;
 
   console.log('\n%c=== FINAL METRICS ===', 'color: #2196F3; font-weight: bold; font-size: 14px;');
   console.log('💵 Total Spend:', totalSpent.toFixed(2));
@@ -81,6 +86,10 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   console.log('👀 Total Impressions:', totalImpressions);
   console.log('💰 Cost per Click:', costPerClick.toFixed(2));
   console.log('🔄 Average Frequency:', averageFrequency.toFixed(2));
+  console.log('Raw frequency data:', {
+    totalFrequency,
+    campaignsWithFrequency,
+  });
   console.log('===================\n');
 
   // Calculate previous period metrics (using 90% of current as example)

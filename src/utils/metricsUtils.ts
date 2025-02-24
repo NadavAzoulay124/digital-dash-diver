@@ -34,41 +34,46 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   console.log(`Processing ${campaigns.length} campaigns for metrics calculation`);
 
   campaigns.forEach(campaign => {
-    if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
-      const insights = campaign.insights.data[0];
-      
-      // Convert spend from string to number, handling potential empty or invalid values
-      const spent = insights.spend ? parseFloat(insights.spend) : 0;
-      const clicks = insights.clicks ? parseInt(insights.clicks, 10) : 0;
-      const impressions = insights.impressions ? parseInt(insights.impressions, 10) : 0;
-      
-      console.log(`Processing campaign ${campaign.name}:`, {
-        spent,
-        clicks,
-        impressions,
-        rawSpend: insights.spend,
-        rawClicks: insights.clicks,
-        rawImpressions: insights.impressions
+    if (campaign.insights && campaign.insights.data) {
+      // Process all insights data entries for this campaign
+      campaign.insights.data.forEach(insights => {
+        // Convert spend from string to number, handling potential empty or invalid values
+        const spent = insights.spend ? parseFloat(insights.spend) : 0;
+        const clicks = insights.clicks ? parseInt(insights.clicks, 10) : 0;
+        const impressions = insights.impressions ? parseInt(insights.impressions, 10) : 0;
+        
+        console.log(`Processing campaign ${campaign.name} insight:`, {
+          date_start: insights.date_start,
+          date_stop: insights.date_stop,
+          spent,
+          clicks,
+          impressions,
+          rawSpend: insights.spend,
+          rawClicks: insights.clicks,
+          rawImpressions: insights.impressions
+        });
+        
+        if (!isNaN(spent)) {
+          totalSpent += spent;
+        }
+        
+        if (!isNaN(clicks)) {
+          totalClicks += clicks;
+        }
+        
+        if (!isNaN(impressions)) {
+          totalImpressions += impressions;
+        }
       });
-      
-      if (!isNaN(spent)) {
-        totalSpent += spent;
-      }
-      
-      if (!isNaN(clicks)) {
-        totalClicks += clicks;
-      }
-      
-      if (!isNaN(impressions)) {
-        totalImpressions += impressions;
-      }
     }
   });
 
-  console.log('Final totals:', {
+  console.log('Final totals after processing all insights:', {
     totalSpent,
     totalClicks,
-    totalImpressions
+    totalImpressions,
+    campaignsProcessed: campaigns.length,
+    timestamp: new Date().toISOString()
   });
 
   // Calculate leads based on clicks (2% conversion rate as previously defined)

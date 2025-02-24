@@ -29,16 +29,18 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
 
   let totalSpent = 0;
   let totalClicks = 0;
-  let totalLeads = 0;
   let totalImpressions = 0;
+
+  console.log(`Processing ${campaigns.length} campaigns for metrics calculation`);
 
   campaigns.forEach(campaign => {
     if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
       const insights = campaign.insights.data[0];
       
-      const spent = parseFloat(insights.spend || '0');
-      const clicks = parseInt(insights.clicks || '0', 10);
-      const impressions = parseInt(insights.impressions || '0', 10);
+      // Convert spend from string to number, handling potential empty or invalid values
+      const spent = insights.spend ? parseFloat(insights.spend) : 0;
+      const clicks = insights.clicks ? parseInt(insights.clicks, 10) : 0;
+      const impressions = insights.impressions ? parseInt(insights.impressions, 10) : 0;
       
       console.log(`Processing campaign ${campaign.name}:`, {
         spent,
@@ -49,18 +51,34 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
         rawImpressions: insights.impressions
       });
       
-      totalSpent += spent;
-      totalClicks += clicks;
-      totalImpressions += impressions;
+      if (!isNaN(spent)) {
+        totalSpent += spent;
+      }
       
-      const estimatedLeads = Math.round(clicks * 0.02);
-      totalLeads += estimatedLeads;
+      if (!isNaN(clicks)) {
+        totalClicks += clicks;
+      }
+      
+      if (!isNaN(impressions)) {
+        totalImpressions += impressions;
+      }
     }
   });
 
+  console.log('Final totals:', {
+    totalSpent,
+    totalClicks,
+    totalImpressions
+  });
+
+  // Calculate leads based on clicks (2% conversion rate as previously defined)
+  const totalLeads = Math.round(totalClicks * 0.02);
+
+  // Calculate metrics
   const roas = totalSpent > 0 ? (totalLeads * 100) / totalSpent : 0;
   const conversionRate = totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0;
 
+  // Calculate previous period metrics (using the same ratios as before)
   const previousTotalSpent = totalSpent * 0.9;
   const previousTotalLeads = totalLeads * 0.85;
   const previousRoas = previousTotalSpent > 0 ? (previousTotalLeads * 100) / previousTotalSpent : 0;
@@ -82,3 +100,4 @@ export const calculatePercentageChange = (current: number, previous: number): nu
   if (previous === 0) return current > 0 ? 100 : 0;
   return ((current - previous) / previous) * 100;
 };
+

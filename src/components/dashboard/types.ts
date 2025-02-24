@@ -25,3 +25,20 @@ export interface FacebookCredentials {
   ad_account_id: string;
   access_token: string;
 }
+
+export interface Campaign {
+  id?: string;
+  name: string;
+  objective?: string;
+  status?: string;
+  insights?: {
+    data?: Array<{
+      spend?: string;
+      clicks?: string;
+      impressions?: string;
+      date_start?: string;
+      date_stop?: string;
+    }>;
+  };
+}
+

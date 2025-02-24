@@ -1,5 +1,5 @@
 
-import { DollarSign, MousePointer, TrendingUp, Activity } from "lucide-react";
+import { DollarSign, MousePointer, Eye } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { calculatePercentageChange } from "@/utils/metricsUtils";
 
@@ -7,23 +7,20 @@ interface DashboardMetricsProps {
   metrics: {
     totalSpent: number;
     totalClicks: number;
-    costPerClick: number;
-    averageFrequency: number;
+    totalImpressions: number;
     previousTotalSpent: number;
     previousTotalClicks: number;
-    previousCostPerClick: number;
-    previousAverageFrequency: number;
+    previousTotalImpressions: number;
   };
 }
 
 export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
   const spentChange = calculatePercentageChange(metrics.totalSpent, metrics.previousTotalSpent);
   const clicksChange = calculatePercentageChange(metrics.totalClicks, metrics.previousTotalClicks);
-  const cpcChange = calculatePercentageChange(metrics.costPerClick, metrics.previousCostPerClick);
-  const frequencyChange = calculatePercentageChange(metrics.averageFrequency, metrics.previousAverageFrequency);
+  const impressionsChange = calculatePercentageChange(metrics.totalImpressions, metrics.previousTotalImpressions);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <MetricCard
         title="Total Spent"
         value={`$${metrics.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
@@ -39,18 +36,11 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
         icon={MousePointer}
       />
       <MetricCard
-        title="Cost per Click"
-        value={`$${metrics.costPerClick.toFixed(2)}`}
-        change={`${cpcChange.toFixed(1)}%`}
-        isPositive={cpcChange <= 0}
-        icon={TrendingUp}
-      />
-      <MetricCard
-        title="Avg. Frequency"
-        value={metrics.averageFrequency.toFixed(2)}
-        change={`${frequencyChange.toFixed(1)}%`}
-        isPositive={frequencyChange >= 0}
-        icon={Activity}
+        title="Total Impressions"
+        value={metrics.totalImpressions.toLocaleString()}
+        change={`${impressionsChange.toFixed(1)}%`}
+        isPositive={impressionsChange >= 0}
+        icon={Eye}
       />
     </div>
   );

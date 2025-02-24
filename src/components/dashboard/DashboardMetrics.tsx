@@ -1,5 +1,5 @@
 
-import { DollarSign, TrendingUp, Users, Target } from "lucide-react";
+import { DollarSign, Target, ShoppingCart, TrendingUp } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { calculatePercentageChange } from "@/utils/metricsUtils";
 import type { Campaign } from "@/components/dashboard/types";
@@ -7,21 +7,21 @@ import type { Campaign } from "@/components/dashboard/types";
 interface DashboardMetricsProps {
   metrics: {
     totalSpent: number;
-    totalLeads: number;
-    roas: number;
+    totalResults: number;
     conversionRate: number;
+    costPerResult: number;
     previousTotalSpent: number;
-    previousTotalLeads: number;
-    previousRoas: number;
+    previousTotalResults: number;
     previousConversionRate: number;
+    previousCostPerResult: number;
   };
 }
 
 export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
   const spentChange = calculatePercentageChange(metrics.totalSpent, metrics.previousTotalSpent);
-  const leadsChange = calculatePercentageChange(metrics.totalLeads, metrics.previousTotalLeads);
-  const roasChange = calculatePercentageChange(metrics.roas, metrics.previousRoas);
+  const resultsChange = calculatePercentageChange(metrics.totalResults, metrics.previousTotalResults);
   const conversionChange = calculatePercentageChange(metrics.conversionRate, metrics.previousConversionRate);
+  const costPerResultChange = calculatePercentageChange(metrics.costPerResult, metrics.previousCostPerResult);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -33,18 +33,11 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
         icon={DollarSign}
       />
       <MetricCard
-        title="ROAS"
-        value={`${metrics.roas.toFixed(1)}x`}
-        change={`${roasChange.toFixed(1)}%`}
-        isPositive={roasChange >= 0}
-        icon={TrendingUp}
-      />
-      <MetricCard
-        title="Total Leads"
-        value={metrics.totalLeads.toString()}
-        change={`${leadsChange.toFixed(1)}%`}
-        isPositive={leadsChange >= 0}
-        icon={Users}
+        title="Total Results"
+        value={metrics.totalResults.toString()}
+        change={`${resultsChange.toFixed(1)}%`}
+        isPositive={resultsChange >= 0}
+        icon={ShoppingCart}
       />
       <MetricCard
         title="Conversion Rate"
@@ -52,6 +45,13 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
         change={`${conversionChange.toFixed(1)}%`}
         isPositive={conversionChange >= 0}
         icon={Target}
+      />
+      <MetricCard
+        title="Cost per Result"
+        value={`$${metrics.costPerResult.toFixed(2)}`}
+        change={`${costPerResultChange.toFixed(1)}%`}
+        isPositive={costPerResultChange <= 0}
+        icon={TrendingUp}
       />
     </div>
   );

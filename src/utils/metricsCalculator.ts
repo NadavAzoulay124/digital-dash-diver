@@ -31,11 +31,16 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
   let campaignCount = 0;
   
   const now = new Date();
-  const sevenDaysAgo = subDays(now, 7);
+  const yesterday = subDays(now, 1); // End date is yesterday
+  const sevenDaysAgo = subDays(yesterday, 6); // Start date is 7 days before yesterday
   
   if (Array.isArray(campaignsData)) {
     console.log('Initial campaigns data:', {
       totalCampaigns: campaignsData.length,
+      dateRange: {
+        start: sevenDaysAgo.toISOString(),
+        end: yesterday.toISOString()
+      },
       campaigns: campaignsData.map(c => ({
         name: c.name,
         status: c.status,
@@ -51,7 +56,10 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
         const insights = campaign.insights.data[0];
         const dateStart = parseISO(insights.date_start);
         
-        const isWithinRange = isWithinInterval(dateStart, { start: sevenDaysAgo, end: now });
+        const isWithinRange = isWithinInterval(dateStart, { 
+          start: sevenDaysAgo, 
+          end: yesterday // Use yesterday as the end date
+        });
         
         if (isWithinRange) {
           campaignCount++;
@@ -89,7 +97,7 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     console.log('Campaigns with spend in last 7 days:', {
       dateRange: {
         start: sevenDaysAgo.toISOString(),
-        end: now.toISOString()
+        end: yesterday.toISOString()
       },
       campaigns: campaignsWithSpend,
       totalSpent,
@@ -114,3 +122,4 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     tasksChange
   };
 };
+

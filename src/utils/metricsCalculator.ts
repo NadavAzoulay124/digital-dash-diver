@@ -1,5 +1,5 @@
 
-import { subDays, parseISO, isWithinInterval } from "date-fns";
+import { subDays, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
 interface Campaign {
   name: string;
@@ -31,8 +31,8 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
   let campaignCount = 0;
   
   const now = new Date();
-  const yesterday = subDays(now, 1); // End date is yesterday
-  const sevenDaysAgo = subDays(yesterday, 6); // Start date is 7 days before yesterday
+  const yesterday = endOfDay(subDays(now, 1)); // End date is end of yesterday
+  const sevenDaysAgo = startOfDay(subDays(yesterday, 6)); // Start date is start of 7 days before yesterday
   
   if (Array.isArray(campaignsData)) {
     console.log('Initial campaigns data:', {
@@ -54,11 +54,11 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     campaignsData.forEach(campaign => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
-        const dateStart = parseISO(insights.date_start);
+        const dateStart = startOfDay(parseISO(insights.date_start)); // Ensure we're comparing full days
         
         const isWithinRange = isWithinInterval(dateStart, { 
           start: sevenDaysAgo, 
-          end: yesterday // Use yesterday as the end date
+          end: yesterday
         });
         
         if (isWithinRange) {
@@ -122,4 +122,3 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     tasksChange
   };
 };
-

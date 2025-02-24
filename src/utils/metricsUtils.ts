@@ -35,39 +35,52 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   console.clear();
   console.log('%c=== PROCESSING FACEBOOK CAMPAIGN DATA ===', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
   console.log('Total campaigns:', campaigns.length);
+  
+  // Log raw campaign data for debugging
+  console.log('Raw campaign data:', JSON.stringify(campaigns, null, 2));
 
-  // List of action types that might indicate a lead
-  const leadActionTypes = ['lead', 'onsite_conversion.lead_grouped', 'leadgen.other'];
-
-  campaigns.forEach((campaign, index) => {
-    if (!campaign.insights?.data) {
-      console.log(`Campaign ${campaign.name}: No insights available`);
+  campaigns.forEach((campaign) => {
+    console.log(`\nProcessing campaign: ${campaign.name}`);
+    
+    if (!campaign.insights?.data || campaign.insights.data.length === 0) {
+      console.log(`Campaign ${campaign.name}: No insights data available`);
       return;
     }
 
-    campaign.insights.data.forEach(insight => {
+    campaign.insights.data.forEach((insight, index) => {
+      console.log(`\nProcessing insight ${index + 1} for campaign ${campaign.name}:`);
+      console.log('Raw insight data:', JSON.stringify(insight, null, 2));
+
       const spent = parseFloat(insight.spend || '0');
       const clicks = parseInt(insight.clicks || '0', 10);
       const impressions = parseInt(insight.impressions || '0', 10);
       
-      // Initialize leads for this insight
       let leads = 0;
 
-      // Log all available actions for debugging
-      if (insight.actions) {
-        console.log(`Actions for campaign "${campaign.name}":`, insight.actions);
+      if (insight.actions && Array.isArray(insight.actions)) {
+        console.log('Available actions:', insight.actions);
         
-        // Try to find leads from any of the possible lead action types
-        for (const actionType of leadActionTypes) {
-          const leadAction = insight.actions.find(action => action.action_type === actionType);
-          if (leadAction) {
-            const leadCount = parseInt(leadAction.value || '0', 10);
+        // Check for any action type that might represent a lead
+        const leadActions = insight.actions.filter(action => 
+          action.action_type?.toLowerCase().includes('lead') ||
+          action.action_type?.toLowerCase().includes('form') ||
+          action.action_type?.toLowerCase().includes('contact')
+        );
+
+        if (leadActions.length > 0) {
+          console.log('Found lead actions:', leadActions);
+          leadActions.forEach(action => {
+            const leadCount = parseInt(action.value || '0', 10);
             if (!isNaN(leadCount)) {
               leads += leadCount;
-              console.log(`Found ${leadCount} leads with action_type "${actionType}" in campaign "${campaign.name}"`);
+              console.log(`Adding ${leadCount} leads from action type: ${action.action_type}`);
             }
-          }
+          });
+        } else {
+          console.log('No lead actions found in this insight');
         }
+      } else {
+        console.log('No actions array found in this insight');
       }
 
       if (!isNaN(spent)) totalSpent += spent;
@@ -75,7 +88,7 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
       if (!isNaN(impressions)) totalImpressions += impressions;
       if (!isNaN(leads)) totalLeads += leads;
 
-      console.log(`Campaign "${campaign.name}" metrics:`, {
+      console.log('Insight metrics:', {
         spent,
         clicks,
         impressions,
@@ -83,8 +96,7 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
         dateRange: {
           start: insight.date_start,
           end: insight.date_stop
-        },
-        rawActions: insight.actions
+        }
       });
     });
   });
@@ -118,3 +130,4 @@ export const calculatePercentageChange = (current: number, previous: number): nu
   if (previous === 0) return current > 0 ? 100 : 0;
   return ((current - previous) / previous) * 100;
 };
+

@@ -32,15 +32,18 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   let totalImpressions = 0;
   let processedInsights = 0;
 
-  console.log(`Starting metrics calculation for ${campaigns.length} campaigns`);
+  console.log('\n=== CAMPAIGN SPEND BREAKDOWN ===\n');
 
   campaigns.forEach((campaign, index) => {
+    console.log(`Campaign ${index + 1}: ${campaign.name}`);
+    console.log('Status:', campaign.status);
+    
     if (!campaign.insights?.data?.length) {
-      console.log(`Campaign ${campaign.name} has no insights data`);
+      console.log('No insights data available');
+      console.log('------------------------\n');
       return;
     }
 
-    console.log(`Processing campaign ${index + 1}/${campaigns.length}: ${campaign.name}`);
     let campaignSpent = 0;
     let campaignClicks = 0;
     let campaignImpressions = 0;
@@ -50,13 +53,13 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
       return new Date(a.date_start || '').getTime() - new Date(b.date_stop || '').getTime();
     });
 
-    sortedInsights.forEach((insight, insightIndex) => {
+    sortedInsights.forEach((insight) => {
       const spent = Number(insight.spend) || 0;
       const clicks = Number(insight.clicks) || 0;
       const impressions = Number(insight.impressions) || 0;
 
       if (isNaN(spent) || isNaN(clicks) || isNaN(impressions)) {
-        console.warn(`Invalid numerical values in insight for campaign ${campaign.name}:`, {
+        console.warn('Invalid numerical values in insight:', {
           spend: insight.spend,
           clicks: insight.clicks,
           impressions: insight.impressions
@@ -68,34 +71,30 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
       campaignClicks += clicks;
       campaignImpressions += impressions;
       processedInsights++;
-
-      console.log(`Insight ${insightIndex + 1}/${sortedInsights.length} for ${campaign.name}:`, {
-        date: insight.date_start,
-        spent,
-        clicks,
-        impressions
-      });
     });
 
-    console.log(`Campaign ${campaign.name} totals:`, {
-      spent: campaignSpent,
-      clicks: campaignClicks,
-      impressions: campaignImpressions
+    console.log('Total Spend:', campaignSpent.toFixed(2));
+    console.log('Total Clicks:', campaignClicks);
+    console.log('Total Impressions:', campaignImpressions);
+    console.log('Number of insights:', sortedInsights.length);
+    console.log('Date range:', {
+      start: sortedInsights[0]?.date_start,
+      end: sortedInsights[sortedInsights.length - 1]?.date_stop
     });
+    console.log('------------------------\n');
 
     totalSpent += campaignSpent;
     totalClicks += campaignClicks;
     totalImpressions += campaignImpressions;
   });
 
-  console.log('Final calculation results:', {
-    totalSpent,
-    totalClicks,
-    totalImpressions,
-    processedCampaigns: campaigns.length,
-    processedInsights,
-    timestamp: new Date().toISOString()
-  });
+  console.log('=== FINAL TOTALS ===');
+  console.log('Total Campaigns:', campaigns.length);
+  console.log('Total Spend:', totalSpent.toFixed(2));
+  console.log('Total Clicks:', totalClicks);
+  console.log('Total Impressions:', totalImpressions);
+  console.log('Total Insights Processed:', processedInsights);
+  console.log('\n===================\n');
 
   // Calculate leads based on clicks (2% conversion rate)
   const totalLeads = Math.round(totalClicks * 0.02);

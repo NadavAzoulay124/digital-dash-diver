@@ -33,14 +33,19 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
 
   console.log(`Processing ${campaigns.length} campaigns for metrics calculation`);
 
+  // Sort insights by date to ensure we process them in chronological order
   campaigns.forEach(campaign => {
     if (campaign.insights && campaign.insights.data) {
+      const sortedInsights = [...campaign.insights.data].sort((a, b) => {
+        return new Date(a.date_start || '').getTime() - new Date(b.date_start || '').getTime();
+      });
+
       // Process all insights data entries for this campaign
-      campaign.insights.data.forEach(insights => {
-        // Convert spend from string to number, handling potential empty or invalid values
-        const spent = insights.spend ? parseFloat(insights.spend) : 0;
-        const clicks = insights.clicks ? parseInt(insights.clicks, 10) : 0;
-        const impressions = insights.impressions ? parseInt(insights.impressions, 10) : 0;
+      sortedInsights.forEach(insights => {
+        // Handle potential string values and convert to numbers
+        const spent = Number(insights.spend || 0);
+        const clicks = Number(insights.clicks || 0);
+        const impressions = Number(insights.impressions || 0);
         
         console.log(`Processing campaign ${campaign.name} insight:`, {
           date_start: insights.date_start,

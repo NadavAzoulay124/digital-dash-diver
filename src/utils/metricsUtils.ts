@@ -10,6 +10,8 @@ interface Metrics {
   previousTotalImpressions: number;
   totalLeads: number;
   previousTotalLeads: number;
+  costPerResult: number;
+  previousCostPerResult: number;
 }
 
 export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
@@ -23,7 +25,9 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
       previousTotalClicks: 0,
       previousTotalImpressions: 0,
       totalLeads: 0,
-      previousTotalLeads: 0
+      previousTotalLeads: 0,
+      costPerResult: 0,
+      previousCostPerResult: 0
     };
   }
 
@@ -31,6 +35,8 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   let totalClicks = 0;
   let totalImpressions = 0;
   let totalLeads = 0;
+  let sumCostPerResult = 0;
+  let campaignsWithCostPerResult = 0;
 
   console.clear();
   console.log('%c=== PROCESSING FACEBOOK CAMPAIGN DATA ===', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
@@ -75,6 +81,16 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
         }
       }
 
+      // Get cost per result directly from the API
+      if (insight.cost_per_result) {
+        const costPerResult = parseFloat(insight.cost_per_result);
+        if (!isNaN(costPerResult)) {
+          sumCostPerResult += costPerResult;
+          campaignsWithCostPerResult++;
+          console.log('Cost per result from API:', costPerResult);
+        }
+      }
+
       if (!isNaN(spent)) totalSpent += spent;
       if (!isNaN(clicks)) totalClicks += clicks;
       if (!isNaN(impressions)) totalImpressions += impressions;
@@ -85,7 +101,7 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
         clicks,
         impressions,
         leads,
-        frequency: insight.frequency,
+        costPerResult: insight.cost_per_result,
         dateRange: {
           start: insight.date_start,
           end: insight.date_stop
@@ -94,11 +110,15 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
     });
   });
 
+  // Calculate average cost per result
+  const avgCostPerResult = campaignsWithCostPerResult > 0 ? sumCostPerResult / campaignsWithCostPerResult : 0;
+
   console.log('\n%c=== FINAL METRICS ===', 'color: #2196F3; font-weight: bold; font-size: 14px;');
   console.log('💵 Total Spend:', totalSpent.toFixed(2));
   console.log('🖱️ Total Clicks:', totalClicks);
   console.log('👀 Total Impressions:', totalImpressions);
   console.log('🎯 Total Leads:', totalLeads);
+  console.log('💰 Average Cost per Result:', avgCostPerResult.toFixed(2));
   console.log('===================\n');
 
   // Calculate previous period metrics (using 90% of current as example)
@@ -106,6 +126,7 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   const previousTotalClicks = Math.round(totalClicks * 0.9);
   const previousTotalImpressions = Math.round(totalImpressions * 0.9);
   const previousTotalLeads = Math.round(totalLeads * 0.9);
+  const previousCostPerResult = avgCostPerResult * 0.9;
 
   return {
     totalSpent,
@@ -115,7 +136,9 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
     previousTotalClicks,
     previousTotalImpressions,
     totalLeads,
-    previousTotalLeads
+    previousTotalLeads,
+    costPerResult: avgCostPerResult,
+    previousCostPerResult
   };
 };
 

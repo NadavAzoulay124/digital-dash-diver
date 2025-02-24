@@ -41,11 +41,13 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
-    // Define basic fields for insights
+    // Define basic fields for insights, including cost_per_result
     const insightsFields = [
       'spend',
       'clicks',
-      'impressions'
+      'impressions',
+      'cost_per_result',
+      'cost_per_action_type'
     ].join(',');
     
     // Define basic fields for campaigns
@@ -74,6 +76,7 @@ serve(async (req) => {
       url: url.replace(accessToken, '[REDACTED]'),
       since,
       until,
+      fields: fields.split(','),
       timestamp: new Date().toISOString()
     });
 
@@ -104,7 +107,8 @@ serve(async (req) => {
       sampleCampaign: data?.data?.[0] ? {
         name: data.data[0].name,
         status: data.data[0].status,
-        hasInsights: !!data.data[0].insights
+        hasInsights: !!data.data[0].insights,
+        sampleInsights: data.data[0].insights?.data?.[0]
       } : null
     });
 
@@ -133,3 +137,4 @@ serve(async (req) => {
     );
   }
 });
+

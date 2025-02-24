@@ -32,10 +32,27 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   let processedInsights = 0;
 
   console.clear(); // Clear previous logs
-  console.log('%c=== CAMPAIGN ANALYSIS START ===', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
+  console.log('%c=== RAW CAMPAIGN DATA FROM FACEBOOK ===', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
   console.log('Timestamp:', new Date().toISOString());
-  console.log('Total campaigns to analyze:', campaigns.length);
+  console.log('Total campaigns received:', campaigns.length);
 
+  // First, show raw campaign data
+  console.group('📊 Raw Campaign Data');
+  campaigns.forEach((campaign, index) => {
+    console.group(`Campaign ${index + 1}: ${campaign.name}`);
+    console.log('Full campaign data:', {
+      id: campaign.id,
+      name: campaign.name,
+      status: campaign.status,
+      objective: campaign.objective,
+      rawInsightsData: campaign.insights?.data || 'No insights available'
+    });
+    console.groupEnd();
+  });
+  console.groupEnd();
+
+  // Then show processed metrics
+  console.group('💰 Processed Campaign Metrics');
   campaigns.forEach((campaign, index) => {
     console.group(`Campaign ${index + 1}: ${campaign.name}`);
     console.log('Status:', campaign.status);
@@ -47,12 +64,22 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
     }
 
     const insights = campaign.insights.data;
-    console.log(`📊 Found ${insights.length} insights entries`);
+    console.log(`Found ${insights.length} insights entries`);
 
     let campaignSpent = 0;
     let campaignResults = 0;
 
-    insights.forEach(insight => {
+    insights.forEach((insight, i) => {
+      console.group(`Insight entry ${i + 1}:`);
+      console.log('Date range:', {
+        start: insight.date_start,
+        end: insight.date_stop
+      });
+      console.log('Raw values:', {
+        spend: insight.spend,
+        website_purchases: insight.website_purchase
+      });
+      
       const spent = Number(insight.spend) || 0;
       const results = Number(insight.website_purchase) || 0;
 
@@ -61,15 +88,19 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
         campaignResults += results;
         processedInsights++;
       }
+      console.groupEnd();
     });
 
-    console.log('💰 Campaign Total Spent:', campaignSpent.toFixed(2));
-    console.log('🎯 Campaign Total Results:', campaignResults);
+    console.log('Campaign Totals:', {
+      spent: campaignSpent.toFixed(2),
+      results: campaignResults
+    });
     console.groupEnd();
 
     totalSpent += campaignSpent;
     totalResults += campaignResults;
   });
+  console.groupEnd();
 
   console.log('\n%c=== FINAL TOTALS ===', 'color: #2196F3; font-weight: bold; font-size: 14px;');
   console.log('💵 Total Spend:', totalSpent.toFixed(2));

@@ -71,18 +71,39 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
 
     insights.forEach((insight, i) => {
       console.group(`Insight entry ${i + 1}:`);
+      
+      // Log all fields to debug what's available
+      console.log('All available fields:', insight);
+      
       console.log('Date range:', {
         start: insight.date_start,
         end: insight.date_stop
       });
-      console.log('Raw values:', {
-        spend: insight.spend,
-        website_purchases: insight.website_purchase
+
+      const spent = Number(insight.spend) || 0;
+      
+      // Try different possible field names for website purchases
+      let results = 0;
+      if ('purchase' in insight) {
+        results = Number(insight.purchase);
+      } else if ('website_purchases' in insight) {
+        results = Number(insight.website_purchases);
+      } else if ('actions' in insight && Array.isArray(insight.actions)) {
+        const purchaseAction = insight.actions.find((action: any) => 
+          action.action_type === 'purchase' || 
+          action.action_type === 'website_purchase' ||
+          action.action_type === 'offsite_conversion.fb_pixel_purchase'
+        );
+        results = purchaseAction ? Number(purchaseAction.value) : 0;
+      }
+
+      console.log('Processed values:', {
+        spend: spent,
+        results: results,
+        rawSpend: insight.spend,
+        foundPurchaseData: results > 0 ? 'yes' : 'no'
       });
       
-      const spent = Number(insight.spend) || 0;
-      const results = Number(insight.website_purchase) || 0;
-
       if (!isNaN(spent) && !isNaN(results)) {
         campaignSpent += spent;
         campaignResults += results;

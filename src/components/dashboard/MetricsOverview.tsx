@@ -1,5 +1,5 @@
 
-import { Users, DollarSign, Target, ListChecks } from "lucide-react";
+import { Users, DollarSign, MousePointer, Eye } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -28,7 +28,7 @@ export const MetricsOverview = () => {
   const metrics = calculateMetrics(facebookData?.data || []);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <MetricCard
         title="Total Spent"
         value={`$${metrics.totalSpent.toLocaleString('en-US', {
@@ -40,26 +40,20 @@ export const MetricsOverview = () => {
         icon={DollarSign}
       />
       <MetricCard
-        title="Active Clients"
-        value={metrics.activeClients.toString()}
-        change={`+${metrics.clientsChange}`}
+        title="Total Clicks"
+        value={metrics.totalClicks?.toString() || "0"}
+        change={`${metrics.clicksChange || 0}%`}
         isPositive={true}
-        icon={Users}
+        icon={MousePointer}
       />
       <MetricCard
-        title="New Leads"
-        value={metrics.totalLeads.toString()}
-        change={`+${metrics.leadsChange}`}
+        title="Total Impressions"
+        value={metrics.totalImpressions?.toString() || "0"}
+        change={`${metrics.impressionsChange || 0}%`}
         isPositive={true}
-        icon={Target}
-      />
-      <MetricCard
-        title="Open Tasks"
-        value={metrics.openTasks.toString()}
-        change={`+${metrics.tasksChange}`}
-        isPositive={false}
-        icon={ListChecks}
+        icon={Eye}
       />
     </div>
   );
 };
+

@@ -1,8 +1,7 @@
 
-import { DollarSign, Target, ShoppingCart, TrendingUp } from "lucide-react";
+import { DollarSign, Target, TrendingUp } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { calculatePercentageChange } from "@/utils/metricsUtils";
-import type { Campaign } from "@/components/dashboard/types";
 
 interface DashboardMetricsProps {
   metrics: {
@@ -19,9 +18,8 @@ interface DashboardMetricsProps {
 
 export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
   const spentChange = calculatePercentageChange(metrics.totalSpent, metrics.previousTotalSpent);
-  const resultsChange = calculatePercentageChange(metrics.totalResults, metrics.previousTotalResults);
-  const conversionChange = calculatePercentageChange(metrics.conversionRate, metrics.previousConversionRate);
   const costPerResultChange = calculatePercentageChange(metrics.costPerResult, metrics.previousCostPerResult);
+  const conversionChange = calculatePercentageChange(metrics.conversionRate, metrics.previousConversionRate);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -33,11 +31,11 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
         icon={DollarSign}
       />
       <MetricCard
-        title="Total Results"
-        value={metrics.totalResults.toString()}
-        change={`${resultsChange.toFixed(1)}%`}
-        isPositive={resultsChange >= 0}
-        icon={ShoppingCart}
+        title="Cost per Result"
+        value={`$${metrics.costPerResult.toFixed(2)}`}
+        change={`${costPerResultChange.toFixed(1)}%`}
+        isPositive={costPerResultChange <= 0}
+        icon={TrendingUp}
       />
       <MetricCard
         title="Conversion Rate"
@@ -45,13 +43,6 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
         change={`${conversionChange.toFixed(1)}%`}
         isPositive={conversionChange >= 0}
         icon={Target}
-      />
-      <MetricCard
-        title="Cost per Result"
-        value={`$${metrics.costPerResult.toFixed(2)}`}
-        change={`${costPerResultChange.toFixed(1)}%`}
-        isPositive={costPerResultChange <= 0}
-        icon={TrendingUp}
       />
     </div>
   );

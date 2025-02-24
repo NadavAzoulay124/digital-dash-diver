@@ -14,7 +14,7 @@ interface Metrics {
 
 export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   if (!campaigns || !Array.isArray(campaigns)) {
-    console.log('No campaign data available for metrics calculation');
+    console.warn('🚨 No campaign data available for metrics calculation');
     return {
       totalSpent: 0,
       totalResults: 0,
@@ -31,76 +31,51 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   let totalResults = 0;
   let processedInsights = 0;
 
-  console.log('\n=== DETAILED CAMPAIGN ANALYSIS ===\n');
-  console.log('Total campaigns received:', campaigns.length);
+  console.clear(); // Clear previous logs
+  console.log('%c=== CAMPAIGN ANALYSIS START ===', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
+  console.log('Timestamp:', new Date().toISOString());
+  console.log('Total campaigns to analyze:', campaigns.length);
 
   campaigns.forEach((campaign, index) => {
-    console.log(`\nAnalyzing Campaign ${index + 1}: ${campaign.name}`);
-    console.log('Campaign Status:', campaign.status);
+    console.group(`Campaign ${index + 1}: ${campaign.name}`);
+    console.log('Status:', campaign.status);
     
     if (!campaign.insights?.data) {
-      console.log('No insights data array found');
+      console.warn('⚠️ No insights data available');
+      console.groupEnd();
       return;
     }
 
-    console.log('Raw insights data:', JSON.stringify(campaign.insights.data, null, 2));
-    
+    const insights = campaign.insights.data;
+    console.log(`📊 Found ${insights.length} insights entries`);
+
     let campaignSpent = 0;
     let campaignResults = 0;
 
-    // Sort insights by date
-    const sortedInsights = [...campaign.insights.data].sort((a, b) => {
-      return new Date(a.date_start || '').getTime() - new Date(b.date_stop || '').getTime();
-    });
-
-    console.log(`Found ${sortedInsights.length} insights entries`);
-
-    sortedInsights.forEach((insight, insightIndex) => {
-      console.log(`\nProcessing insight ${insightIndex + 1}:`, {
-        date_start: insight.date_start,
-        date_stop: insight.date_stop,
-        raw_spend: insight.spend,
-        raw_website_purchase: insight.website_purchase
-      });
-
+    insights.forEach(insight => {
       const spent = Number(insight.spend) || 0;
       const results = Number(insight.website_purchase) || 0;
-      
-      if (isNaN(spent) || isNaN(results)) {
-        console.warn('Invalid numerical values in insight:', {
-          spend: insight.spend,
-          results: insight.website_purchase
-        });
-        return;
+
+      if (!isNaN(spent) && !isNaN(results)) {
+        campaignSpent += spent;
+        campaignResults += results;
+        processedInsights++;
       }
-
-      console.log('Processed values:', {
-        spent: spent,
-        results: results
-      });
-
-      campaignSpent += spent;
-      campaignResults += results;
-      processedInsights++;
     });
 
-    console.log('\nCampaign Summary:', {
-      name: campaign.name,
-      totalSpent: campaignSpent.toFixed(2),
-      totalResults: campaignResults,
-      insightsProcessed: sortedInsights.length
-    });
+    console.log('💰 Campaign Total Spent:', campaignSpent.toFixed(2));
+    console.log('🎯 Campaign Total Results:', campaignResults);
+    console.groupEnd();
 
     totalSpent += campaignSpent;
     totalResults += campaignResults;
   });
 
-  console.log('\n=== FINAL TOTALS ===');
-  console.log('Total Campaigns:', campaigns.length);
-  console.log('Total Spend:', totalSpent.toFixed(2));
-  console.log('Total Results:', totalResults);
-  console.log('Total Insights Processed:', processedInsights);
-  console.log('\n===================\n');
+  console.log('\n%c=== FINAL TOTALS ===', 'color: #2196F3; font-weight: bold; font-size: 14px;');
+  console.log('💵 Total Spend:', totalSpent.toFixed(2));
+  console.log('📈 Total Results:', totalResults);
+  console.log('🔄 Processed Insights:', processedInsights);
+  console.log('===================\n');
 
   // Calculate metrics
   const conversionRate = totalSpent > 0 ? (totalResults / totalSpent) * 100 : 0;

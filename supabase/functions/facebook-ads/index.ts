@@ -41,14 +41,11 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
-    // Define insights fields
+    // Define insights fields - removing cost_per_result as it's not a valid field
     const insightsFields = [
       'impressions',
       'spend',
-      'clicks',
-      'cost_per_result',
-      'actions',
-      'action_values'
+      'clicks'
     ].join(',');
     
     // Define campaign fields
@@ -138,3 +135,4 @@ serve(async (req) => {
     );
   }
 });
+

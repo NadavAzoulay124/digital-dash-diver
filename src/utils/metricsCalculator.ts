@@ -1,5 +1,5 @@
 
-import { subDays, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { subDays, parseISO, isWithinInterval } from "date-fns";
 
 interface Campaign {
   name: string;
@@ -31,16 +31,11 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
   let campaignCount = 0;
   
   const now = new Date();
-  const yesterday = endOfDay(subDays(now, 1)); // End date is end of yesterday
-  const sevenDaysAgo = startOfDay(subDays(yesterday, 6)); // Start date is start of 7 days before yesterday
+  const sevenDaysAgo = subDays(now, 7);
   
   if (Array.isArray(campaignsData)) {
     console.log('Initial campaigns data:', {
       totalCampaigns: campaignsData.length,
-      dateRange: {
-        start: sevenDaysAgo.toISOString(),
-        end: yesterday.toISOString()
-      },
       campaigns: campaignsData.map(c => ({
         name: c.name,
         status: c.status,
@@ -54,12 +49,9 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     campaignsData.forEach(campaign => {
       if (campaign.insights && campaign.insights.data && campaign.insights.data[0]) {
         const insights = campaign.insights.data[0];
-        const dateStart = startOfDay(parseISO(insights.date_start)); // Ensure we're comparing full days
+        const dateStart = parseISO(insights.date_start);
         
-        const isWithinRange = isWithinInterval(dateStart, { 
-          start: sevenDaysAgo, 
-          end: yesterday
-        });
+        const isWithinRange = isWithinInterval(dateStart, { start: sevenDaysAgo, end: now });
         
         if (isWithinRange) {
           campaignCount++;
@@ -97,7 +89,7 @@ export const calculateMetrics = (campaignsData: Campaign[]): MetricsResult => {
     console.log('Campaigns with spend in last 7 days:', {
       dateRange: {
         start: sevenDaysAgo.toISOString(),
-        end: yesterday.toISOString()
+        end: now.toISOString()
       },
       campaigns: campaignsWithSpend,
       totalSpent,

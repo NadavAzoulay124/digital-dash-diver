@@ -41,38 +41,47 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
-    // Define insights fields - removing cost_per_result as it's not a valid field
+    // Define fields for insights
     const insightsFields = [
-      'impressions',
       'spend',
-      'clicks'
+      'clicks',
+      'impressions',
+      'date_start',
+      'date_stop'
     ].join(',');
     
-    // Define campaign fields
+    // Define fields for campaigns
     const campaignFields = [
       'name',
       'objective',
       'status'
     ].join(',');
 
-    // Construct the base URL for Graph API v19.0
+    // Construct the base URL
     const baseUrl = `https://graph.facebook.com/v19.0/${formattedAdAccountId}/campaigns`;
     const params = new URLSearchParams();
     params.append('access_token', accessToken);
-    
-    // Add fields parameter with time range if specified
-    let fields = `${campaignFields},insights{${insightsFields}}`;
+
+    // Construct time range object for insights
+    let timeRangeStr = '';
     if (since && until) {
-      const timeRange = JSON.stringify({ since, until });
-      fields = `${campaignFields},insights.time_range(${timeRange}){${insightsFields}}`;
+      timeRangeStr = JSON.stringify({
+        since,
+        until
+      });
     }
+
+    // Add fields parameter
+    const fields = timeRangeStr
+      ? `${campaignFields},insights.time_range(${timeRangeStr}){${insightsFields}}`
+      : `${campaignFields},insights{${insightsFields}}`;
     
     params.append('fields', fields);
-    params.append('limit', '1000'); // Add a high limit to get all campaigns
 
     const url = `${baseUrl}?${params}`;
     console.log('Making request to Facebook API:', {
       url: url.replace(accessToken, '[REDACTED]'),
+      timeRange: timeRangeStr ? JSON.parse(timeRangeStr) : 'default',
       fields: fields.split(','),
       timestamp: new Date().toISOString()
     });
@@ -98,20 +107,19 @@ serve(async (req) => {
       throw new Error(`Facebook API error: ${JSON.stringify(data.error)}`);
     }
 
-    console.log('Facebook API response:', {
+    console.log('Facebook API response summary:', {
       timestamp: new Date().toISOString(),
       campaignsCount: data?.data?.length || 0,
-      sampleCampaign: data?.data?.[0] ? {
+      sampleData: data?.data?.[0] ? {
         name: data.data[0].name,
         status: data.data[0].status,
         hasInsights: !!data.data[0].insights,
-        sampleInsights: data.data[0].insights?.data?.[0]
+        insightsSample: data.data[0].insights?.data?.[0]
       } : null
     });
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200
     });
 
   } catch (error) {
@@ -129,7 +137,7 @@ serve(async (req) => {
         }
       }),
       { 
-        status: 200, // Changed to 200 to prevent client from failing
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

@@ -28,7 +28,6 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   }
 
   let totalSpent = 0;
-  let totalClicks = 0;
   let totalResults = 0;
   let processedInsights = 0;
 
@@ -45,7 +44,6 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
     }
 
     let campaignSpent = 0;
-    let campaignClicks = 0;
     let campaignResults = 0;
 
     // Sort insights by date
@@ -55,26 +53,23 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
 
     sortedInsights.forEach((insight) => {
       const spent = Number(insight.spend) || 0;
-      const clicks = Number(insight.clicks) || 0;
+      // Use actual results from the insights data instead of calculating from clicks
+      const results = insight.website_purchases || 0;
       
-      if (isNaN(spent) || isNaN(clicks)) {
+      if (isNaN(spent) || isNaN(results)) {
         console.warn('Invalid numerical values in insight:', {
           spend: insight.spend,
-          clicks: insight.clicks
+          results: insight.website_purchases
         });
         return;
       }
 
       campaignSpent += spent;
-      campaignClicks += clicks;
-      // For now, we'll estimate one result per 100 clicks as example data
-      // This should be replaced with actual result data from the API
-      campaignResults += Math.round(clicks * 0.01);
+      campaignResults += results;
       processedInsights++;
     });
 
     console.log('Total Spend:', campaignSpent.toFixed(2));
-    console.log('Total Clicks:', campaignClicks);
     console.log('Total Results:', campaignResults);
     console.log('Number of insights:', sortedInsights.length);
     console.log('Date range:', {
@@ -84,7 +79,6 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
     console.log('------------------------\n');
 
     totalSpent += campaignSpent;
-    totalClicks += campaignClicks;
     totalResults += campaignResults;
   });
 
@@ -96,7 +90,7 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   console.log('\n===================\n');
 
   // Calculate metrics
-  const conversionRate = totalClicks > 0 ? (totalResults / totalClicks) * 100 : 0;
+  const conversionRate = totalSpent > 0 ? (totalResults / totalSpent) * 100 : 0;
   const costPerResult = totalResults > 0 ? totalSpent / totalResults : 0;
 
   // Calculate previous period metrics (example: 90% of current values)

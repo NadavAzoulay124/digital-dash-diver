@@ -31,18 +31,20 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   let totalResults = 0;
   let processedInsights = 0;
 
-  console.log('\n=== CAMPAIGN SPEND AND RESULTS BREAKDOWN ===\n');
+  console.log('\n=== DETAILED CAMPAIGN ANALYSIS ===\n');
+  console.log('Total campaigns received:', campaigns.length);
 
   campaigns.forEach((campaign, index) => {
-    console.log(`Campaign ${index + 1}: ${campaign.name}`);
-    console.log('Status:', campaign.status);
+    console.log(`\nAnalyzing Campaign ${index + 1}: ${campaign.name}`);
+    console.log('Campaign Status:', campaign.status);
     
-    if (!campaign.insights?.data?.length) {
-      console.log('No insights data available');
-      console.log('------------------------\n');
+    if (!campaign.insights?.data) {
+      console.log('No insights data array found');
       return;
     }
 
+    console.log('Raw insights data:', JSON.stringify(campaign.insights.data, null, 2));
+    
     let campaignSpent = 0;
     let campaignResults = 0;
 
@@ -51,9 +53,17 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
       return new Date(a.date_start || '').getTime() - new Date(b.date_stop || '').getTime();
     });
 
-    sortedInsights.forEach((insight) => {
+    console.log(`Found ${sortedInsights.length} insights entries`);
+
+    sortedInsights.forEach((insight, insightIndex) => {
+      console.log(`\nProcessing insight ${insightIndex + 1}:`, {
+        date_start: insight.date_start,
+        date_stop: insight.date_stop,
+        raw_spend: insight.spend,
+        raw_website_purchase: insight.website_purchase
+      });
+
       const spent = Number(insight.spend) || 0;
-      // Get actual website purchases from insights
       const results = Number(insight.website_purchase) || 0;
       
       if (isNaN(spent) || isNaN(results)) {
@@ -64,25 +74,28 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
         return;
       }
 
+      console.log('Processed values:', {
+        spent: spent,
+        results: results
+      });
+
       campaignSpent += spent;
       campaignResults += results;
       processedInsights++;
     });
 
-    console.log('Total Spend:', campaignSpent.toFixed(2));
-    console.log('Total Results:', campaignResults);
-    console.log('Number of insights:', sortedInsights.length);
-    console.log('Date range:', {
-      start: sortedInsights[0]?.date_start,
-      end: sortedInsights[sortedInsights.length - 1]?.date_stop
+    console.log('\nCampaign Summary:', {
+      name: campaign.name,
+      totalSpent: campaignSpent.toFixed(2),
+      totalResults: campaignResults,
+      insightsProcessed: sortedInsights.length
     });
-    console.log('------------------------\n');
 
     totalSpent += campaignSpent;
     totalResults += campaignResults;
   });
 
-  console.log('=== FINAL TOTALS ===');
+  console.log('\n=== FINAL TOTALS ===');
   console.log('Total Campaigns:', campaigns.length);
   console.log('Total Spend:', totalSpent.toFixed(2));
   console.log('Total Results:', totalResults);

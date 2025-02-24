@@ -41,21 +41,26 @@ serve(async (req) => {
     // Ensure adAccountId starts with 'act_'
     const formattedAdAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
     
-    // Define fields for insights - added frequency field
+    // Define fields for insights with detailed metrics
     const insightsFields = [
       'spend',
       'clicks',
       'impressions',
       'frequency',
       'date_start',
-      'date_stop'
+      'date_stop',
+      'actions',
+      'action_values',
+      'conversions',
+      'conversion_values'
     ].join(',');
     
     // Define fields for campaigns
     const campaignFields = [
       'name',
       'objective',
-      'status'
+      'status',
+      'effective_status'
     ].join(',');
 
     // Construct the base URL
@@ -63,26 +68,25 @@ serve(async (req) => {
     const params = new URLSearchParams();
     params.append('access_token', accessToken);
 
-    // Construct time range object for insights
-    let timeRangeStr = '';
-    if (since && until) {
-      timeRangeStr = JSON.stringify({
-        since,
-        until
-      });
-    }
+    // Define time range for insights
+    const timeRange = since && until ? {
+      since,
+      until,
+      time_increment: 1  // Get daily data
+    } : undefined;
 
-    // Add fields parameter
-    const fields = timeRangeStr
-      ? `${campaignFields},insights.time_range(${timeRangeStr}){${insightsFields}}`
+    // Add fields parameter with time range if specified
+    const fields = timeRange
+      ? `${campaignFields},insights.time_range(${JSON.stringify(timeRange)}){${insightsFields}}`
       : `${campaignFields},insights{${insightsFields}}`;
     
     params.append('fields', fields);
+    params.append('limit', '1000'); // Increase limit to get more campaigns
 
     const url = `${baseUrl}?${params}`;
     console.log('Making request to Facebook API:', {
       url: url.replace(accessToken, '[REDACTED]'),
-      timeRange: timeRangeStr ? JSON.parse(timeRangeStr) : 'default',
+      timeRange: timeRange || 'default',
       fields: fields.split(','),
       timestamp: new Date().toISOString()
     });
@@ -108,12 +112,15 @@ serve(async (req) => {
       throw new Error(`Facebook API error: ${JSON.stringify(data.error)}`);
     }
 
+    // Log a sample of the data to debug insights
     console.log('Facebook API response summary:', {
       timestamp: new Date().toISOString(),
       campaignsCount: data?.data?.length || 0,
       sampleData: data?.data?.[0] ? {
         name: data.data[0].name,
         status: data.data[0].status,
+        effectiveStatus: data.data[0].effective_status,
+        objective: data.data[0].objective,
         hasInsights: !!data.data[0].insights,
         insightsSample: data.data[0].insights?.data?.[0]
       } : null
@@ -144,4 +151,3 @@ serve(async (req) => {
     );
   }
 });
-

@@ -30,65 +30,81 @@ export const calculateMetrics = (campaigns: Campaign[]): Metrics => {
   let totalSpent = 0;
   let totalClicks = 0;
   let totalImpressions = 0;
+  let processedInsights = 0;
 
-  console.log(`Processing ${campaigns.length} campaigns for metrics calculation`);
+  console.log(`Starting metrics calculation for ${campaigns.length} campaigns`);
 
-  // Sort insights by date to ensure we process them in chronological order
-  campaigns.forEach(campaign => {
-    if (campaign.insights && campaign.insights.data) {
-      const sortedInsights = [...campaign.insights.data].sort((a, b) => {
-        return new Date(a.date_start || '').getTime() - new Date(b.date_start || '').getTime();
-      });
-
-      // Process all insights data entries for this campaign
-      sortedInsights.forEach(insights => {
-        // Handle potential string values and convert to numbers
-        const spent = Number(insights.spend || 0);
-        const clicks = Number(insights.clicks || 0);
-        const impressions = Number(insights.impressions || 0);
-        
-        console.log(`Processing campaign ${campaign.name} insight:`, {
-          date_start: insights.date_start,
-          date_stop: insights.date_stop,
-          spent,
-          clicks,
-          impressions,
-          rawSpend: insights.spend,
-          rawClicks: insights.clicks,
-          rawImpressions: insights.impressions
-        });
-        
-        if (!isNaN(spent)) {
-          totalSpent += spent;
-        }
-        
-        if (!isNaN(clicks)) {
-          totalClicks += clicks;
-        }
-        
-        if (!isNaN(impressions)) {
-          totalImpressions += impressions;
-        }
-      });
+  campaigns.forEach((campaign, index) => {
+    if (!campaign.insights?.data?.length) {
+      console.log(`Campaign ${campaign.name} has no insights data`);
+      return;
     }
+
+    console.log(`Processing campaign ${index + 1}/${campaigns.length}: ${campaign.name}`);
+    let campaignSpent = 0;
+    let campaignClicks = 0;
+    let campaignImpressions = 0;
+
+    // Sort insights by date
+    const sortedInsights = [...campaign.insights.data].sort((a, b) => {
+      return new Date(a.date_start || '').getTime() - new Date(b.date_stop || '').getTime();
+    });
+
+    sortedInsights.forEach((insight, insightIndex) => {
+      const spent = Number(insight.spend) || 0;
+      const clicks = Number(insight.clicks) || 0;
+      const impressions = Number(insight.impressions) || 0;
+
+      if (isNaN(spent) || isNaN(clicks) || isNaN(impressions)) {
+        console.warn(`Invalid numerical values in insight for campaign ${campaign.name}:`, {
+          spend: insight.spend,
+          clicks: insight.clicks,
+          impressions: insight.impressions
+        });
+        return;
+      }
+
+      campaignSpent += spent;
+      campaignClicks += clicks;
+      campaignImpressions += impressions;
+      processedInsights++;
+
+      console.log(`Insight ${insightIndex + 1}/${sortedInsights.length} for ${campaign.name}:`, {
+        date: insight.date_start,
+        spent,
+        clicks,
+        impressions
+      });
+    });
+
+    console.log(`Campaign ${campaign.name} totals:`, {
+      spent: campaignSpent,
+      clicks: campaignClicks,
+      impressions: campaignImpressions
+    });
+
+    totalSpent += campaignSpent;
+    totalClicks += campaignClicks;
+    totalImpressions += campaignImpressions;
   });
 
-  console.log('Final totals after processing all insights:', {
+  console.log('Final calculation results:', {
     totalSpent,
     totalClicks,
     totalImpressions,
-    campaignsProcessed: campaigns.length,
+    processedCampaigns: campaigns.length,
+    processedInsights,
     timestamp: new Date().toISOString()
   });
 
-  // Calculate leads based on clicks (2% conversion rate as previously defined)
+  // Calculate leads based on clicks (2% conversion rate)
   const totalLeads = Math.round(totalClicks * 0.02);
 
   // Calculate metrics
   const roas = totalSpent > 0 ? (totalLeads * 100) / totalSpent : 0;
   const conversionRate = totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0;
 
-  // Calculate previous period metrics (using the same ratios as before)
+  // Calculate previous period metrics
   const previousTotalSpent = totalSpent * 0.9;
   const previousTotalLeads = totalLeads * 0.85;
   const previousRoas = previousTotalSpent > 0 ? (previousTotalLeads * 100) / previousTotalSpent : 0;

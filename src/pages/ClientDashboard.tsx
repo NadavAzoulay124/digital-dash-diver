@@ -6,11 +6,9 @@ import { ClientLeadStats } from "@/components/dashboard/ClientLeadStats";
 import { LeadsBoard } from "@/components/dashboard/LeadsBoard";
 import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import { CampaignInsights } from "@/components/dashboard/CampaignInsights";
-import { FacebookCampaigns } from "@/components/dashboard/FacebookCampaigns";
-import { DollarSign, TrendingUp, Users, Target, AlertCircle } from "lucide-react";
+import { DollarSign, TrendingUp, Users, Target } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -25,7 +23,7 @@ const ClientDashboard = () => {
     setDateRange({ startDate, endDate });
   };
 
-  const { data: facebookData, isError, isLoading } = useQuery({
+  const { data: facebookData, isLoading } = useQuery({
     queryKey: ['facebook-campaigns', dateRange],
     queryFn: async () => {
       const { data: credentials, error: credentialsError } = await supabase
@@ -219,26 +217,6 @@ const ClientDashboard = () => {
                 isPositive={conversionChange >= 0}
                 icon={Target}
               />
-            </div>
-
-            <div className="mb-8">
-              {isLoading ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Loading campaign data...
-                  </AlertDescription>
-                </Alert>
-              ) : isError ? (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Failed to load campaign data. Please try again later.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <FacebookCampaigns campaigns={facebookData?.data || []} />
-              )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

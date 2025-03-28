@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          business_type: string
+          contact_name: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          business_type: string
+          contact_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          business_type?: string
+          contact_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contract_services: {
         Row: {
           contract_id: string | null
@@ -86,6 +116,39 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_summaries: {
+        Row: {
+          client_id: string
+          client_name: string
+          conversation_notes: string
+          created_at: string
+          id: string
+          is_ai_generated: boolean
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          client_name: string
+          conversation_notes: string
+          created_at?: string
+          id?: string
+          is_ai_generated?: boolean
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          client_name?: string
+          conversation_notes?: string
+          created_at?: string
+          id?: string
+          is_ai_generated?: boolean
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       facebook_ads_credentials: {
         Row: {
           access_token: string
@@ -156,6 +219,86 @@ export type Database = {
           developer_token?: string
           id?: string
           refresh_token?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lead_comments: {
+        Row: {
+          category: string
+          comment: string
+          created_at: string | null
+          id: string
+          lead_id: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          comment: string
+          created_at?: string | null
+          id: string
+          lead_id: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          comment?: string
+          created_at?: string | null
+          id?: string
+          lead_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_comments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          ad: string
+          ad_set: string
+          campaign: string
+          created_at: string | null
+          date: string
+          id: string
+          name: string
+          phone: string
+          source: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ad: string
+          ad_set: string
+          campaign: string
+          created_at?: string | null
+          date: string
+          id: string
+          name: string
+          phone: string
+          source: string
+          status: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ad?: string
+          ad_set?: string
+          campaign?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          name?: string
+          phone?: string
+          source?: string
+          status?: string
           updated_at?: string | null
           user_id?: string
         }
